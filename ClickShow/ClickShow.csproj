@@ -92,60 +92,16 @@
       <DependentUpon>ClickIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="DpiHelper.cs" />
-    <Compile Include="Hook\Combination.cs" />
-    <Compile Include="Hook\Hook.cs" />
-    <Compile Include="Hook\HotKeys\HotKeyArgs.cs" />
-    <Compile Include="Hook\HotKeys\HotKeySet.cs" />
-    <Compile Include="Hook\HotKeys\HotKeySetCollection.cs" />
-    <Compile Include="Hook\HotKeys\HotKeySetsListener.cs" />
-    <Compile Include="Hook\IKeyboardEvents.cs" />
-    <Compile Include="Hook\IKeyboardMouseEvents.cs" />
-    <Compile Include="Hook\IMouseEvents.cs" />
-    <Compile Include="Hook\Implementation\AppEventFacade.cs" />
-    <Compile Include="Hook\Implementation\AppKeyListener.cs" />
-    <Compile Include="Hook\Implementation\AppMouseListener.cs" />
-    <Compile Include="Hook\Implementation\BaseListener.cs" />
-    <Compile Include="Hook\Implementation\ButtonSet.cs" />
-    <Compile Include="Hook\Implementation\Callback.cs" />
-    <Compile Include="Hook\Implementation\Chord.cs" />
-    <Compile Include="Hook\Implementation\EventFacade.cs" />
-    <Compile Include="Hook\Implementation\GlobalEventFacade.cs" />
-    <Compile Include="Hook\Implementation\GlobalKeyListener.cs" />
-    <Compile Include="Hook\Implementation\GlobalMouseListener.cs" />
-    <Compile Include="Hook\Implementation\KeyboardState.cs" />
-    <Compile Include="Hook\Implementation\KeyListener.cs" />
-    <Compile Include="Hook\Implementation\KeysExtensions.cs" />
-    <Compile Include="Hook\Implementation\MouseListener.cs" />
-    <Compile Include="Hook\Implementation\Subscribe.cs" />
-    <Compile Include="Hook\KeyCombinationExtensions.cs" />
-    <Compile Include="Hook\KeyDownTxtEventArgs.cs" />
-    <Compile Include="Hook\KeyEventArgsExt.cs" />
-    <Compile Include="Hook\KeyPressEventArgsExt.cs" />
-    <Compile Include="Hook\MouseEventExtArgs.cs" />
-    <Compile Include="Hook\Sequence.cs" />
-    <Compile Include="Hook\SequenceBase.cs" />
-    <Compile Include="Hook\WinApi\AppMouseStruct.cs" />
-    <Compile Include="Hook\WinApi\CallbackData.cs" />
-    <Compile Include="Hook\WinApi\HookHelper.cs" />
-    <Compile Include="Hook\WinApi\HookIds.cs" />
-    <Compile Include="Hook\WinApi\HookNativeMethods.cs" />
-    <Compile Include="Hook\WinApi\HookProcedure.cs" />
-    <Compile Include="Hook\WinApi\HookProcedureHandle.cs" />
-    <Compile Include="Hook\WinApi\HookResult.cs" />
-    <Compile Include="Hook\WinApi\HotkeysNativeMethods.cs" />
-    <Compile Include="Hook\WinApi\KeyboardHookStruct.cs" />
-    <Compile Include="Hook\WinApi\KeyboardNativeMethods.cs" />
-    <Compile Include="Hook\WinApi\Messages.cs" />
-    <Compile Include="Hook\WinApi\MouseNativeMethods.cs" />
-    <Compile Include="Hook\WinApi\MouseStruct.cs" />
-    <Compile Include="Hook\WinApi\Point.cs" />
-    <Compile Include="Hook\WinApi\ThreadNativeMethods.cs" />
+    <Compile Include="MouseHook\GlobalHook.cs" />
+    <Compile Include="MouseHook\HookType.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MouseHook\MouseHook.cs" />
+    <Compile Include="MouseHook\NativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -172,9 +128,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Hook\HotKeys\ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="click.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -189,5 +142,6 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

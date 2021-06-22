@@ -1,5 +1,4 @@
-﻿using Gma.System.MouseKeyHook;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -18,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MessageBox = System.Windows.MessageBox;
+using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
 
 namespace ClickShow
 {
@@ -28,7 +28,7 @@ namespace ClickShow
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IKeyboardMouseEvents m_GlobalHook;
+        private MouseHook.MouseHook _mouseHook;
 
         // 窗口缓存,解决连续点击的显示问题
         private IList<ClickIndicator> _clickIndicators = new List<ClickIndicator>();
@@ -73,10 +73,8 @@ namespace ClickShow
         {
             InitializeComponent();
 
-            // Note: for the application hook, use the Hook.AppEvents() instead
-            m_GlobalHook = Hook.GlobalEvents();
+            
 
-            m_GlobalHook.MouseDownExt += GlobalHookMouseDownExt;
 
             Closed += OnClosed;
 
@@ -85,23 +83,13 @@ namespace ClickShow
                 WindowState = WindowState.Minimized;
             };
 
+            // Note: for the application hook, use the Hook.AppEvents() instead
+            _mouseHook = new MouseHook.MouseHook();
+            _mouseHook.MouseDown += MouseHookOnMouseDown;
+            _mouseHook.Start();
         }
 
-        private void OnClosed(object sender, EventArgs e)
-        {
-
-            m_GlobalHook.MouseDownExt -= GlobalHookMouseDownExt;
-
-            //It is recommened to dispose it
-            m_GlobalHook.Dispose();
-
-            foreach (var x in _clickIndicators)
-            {
-                x.Close();
-            }
-        }
-
-        private void GlobalHookMouseDownExt(object sender, MouseEventExtArgs e)
+        private void MouseHookOnMouseDown(object sender, MouseEventArgs e)
         {
             if (!Enabled)
             {
@@ -149,14 +137,21 @@ namespace ClickShow
 
 
             });
-
         }
 
-        private void BtnTest_OnClick(object sender, RoutedEventArgs e)
+        private void OnClosed(object sender, EventArgs e)
         {
-            //var win = new ClickIndicator();
-            //win.Show();
+            _mouseHook.MouseDown -= MouseHookOnMouseDown;
+            _mouseHook.Stop();
+           
+
+            foreach (var x in _clickIndicators)
+            {
+                x.Close();
+            }
         }
+
+
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
@@ -166,6 +161,9 @@ namespace ClickShow
             this.Close();
         }
 
+        /// <summary>
+        /// 打开主页
+        /// </summary>
         private void Hyperlink_OnRequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             try
