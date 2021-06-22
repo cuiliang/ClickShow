@@ -8,7 +8,7 @@
 
 图标来源：https://www.iconfont.cn/collections/detail?spm=a313x.7781069.1998910419.dc64b3430&cid=13315
 
-下载地址：https://github.com/cuiliang/ClickShow/releases/download/1.1/ClickShow.exe
+下载地址：https://github.com/cuiliang/ClickShow/releases
 
 ![image](https://user-images.githubusercontent.com/1972649/122925354-5554a600-d399-11eb-883c-60220fbd8da3.png)
 
