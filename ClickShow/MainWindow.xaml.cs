@@ -123,15 +123,17 @@ namespace ClickShow
             {
                 WindowState = WindowState.Minimized;
                 UpdateHoverDotVisibility();
+
+                // Note: for the application hook, use the Hook.AppEvents() instead
+                _mouseHook = new MouseHook.MouseHook();
+                _mouseHook.MouseDown += MouseHookOnMouseDown;
+                _mouseHook.MouseMove += MouseHookOnMouseMove;
+                _mouseHook.Start();
             };
             StateChanged += OnStateChanged;
 
 
-            // Note: for the application hook, use the Hook.AppEvents() instead
-            _mouseHook = new MouseHook.MouseHook();
-            _mouseHook.MouseDown += MouseHookOnMouseDown;
-            _mouseHook.MouseMove += MouseHookOnMouseMove;
-            _mouseHook.Start();
+            
 
             CreateNotifyIcon();
         }
@@ -245,7 +247,8 @@ namespace ClickShow
             _mouseHook.MouseMove -= MouseHookOnMouseMove;
             _mouseHook.MouseDown -= MouseHookOnMouseDown;
             _mouseHook.Stop();
-           
+
+            _notifyIcon.Visible = false;
 
             foreach (var x in _clickIndicators)
             {
