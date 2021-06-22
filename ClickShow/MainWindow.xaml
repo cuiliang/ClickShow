@@ -13,20 +13,21 @@
     MinHeight="100"
     ResizeMode="CanMinimize"
     SizeToContent="WidthAndHeight"
+    WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid Margin="20">
         <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Orientation="Horizontal">
+            Orientation="Vertical">
             <CheckBox
                 Margin="10"
                 VerticalContentAlignment="Center"
-                Content=""
+                Content="开启显示 / Enable Show Click"
                 IsChecked="{Binding ElementName=TheWindow, Path=Enabled}" />
 
             <TextBlock Margin="10" HorizontalAlignment="Center">
-                <Hyperlink NavigateUri="https://github.com/cuiliang/clickshow">反馈与更新</Hyperlink>
+                <Hyperlink NavigateUri="https://github.com/cuiliang/clickshow" RequestNavigate="Hyperlink_OnRequestNavigate">反馈与更新 / Homepage</Hyperlink>
             </TextBlock>
 
         </StackPanel>

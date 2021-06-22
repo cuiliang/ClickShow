@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MessageBox = System.Windows.MessageBox;
 
 namespace ClickShow
 {
@@ -163,6 +164,18 @@ namespace ClickShow
         private void BtnClose_OnClick(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void Hyperlink_OnRequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            try
+            {
+                Process.Start("https://github.com/cuiliang/clickshow");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("无法打开网址：https://github.com/cuiliang/clickshow");
+            }
         }
     }
 }
