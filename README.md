@@ -17,3 +17,7 @@
 
 ![test](https://user-images.githubusercontent.com/1972649/122925974-f17ead00-d399-11eb-9c57-9b2f14dd5973.gif)
 
+
+# 已知问题
+- 在Windows7下似乎没效果
+- 
