@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31229.75
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickShow", "ClickShow\ClickShow.csproj", "{AC458140-2584-4E45-ACE8-CEAA18A4DBD0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AC458140-2584-4E45-ACE8-CEAA18A4DBD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC458140-2584-4E45-ACE8-CEAA18A4DBD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC458140-2584-4E45-ACE8-CEAA18A4DBD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC458140-2584-4E45-ACE8-CEAA18A4DBD0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {161DA95D-5645-4DA5-94CD-33D4AD029A55}
+	EndGlobalSection
+EndGlobal

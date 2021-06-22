@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<package>
+  <metadata>
+    <id>MouseKeyHook</id>
+    <version>5.6.1-alpha</version>
+    <title>$title$</title>
+    <authors>George Mamaladze</authors>
+    <owners>George Mamaladze</owners>
+    <licenseUrl>https://github.com/gmamaladze/globalmousekeyhook/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/gmamaladze/globalmousekeyhook</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+      This library attaches to windows global hooks, tracks keyboard and mouse clicks and movement and raises common .NET events with KeyEventArgs and MouseEventArgs, so you can easily retrieve any information you need:
+
+      * Mouse coordinates
+      * Mouse buttons clicked
+      * Mouse wheel scrolls
+      * Key presses and releases
+      * Special key states
+      * [NEW] Key combinations and sequences
+
+      Additionally, there is a possibility to supress certain keyboard or mouse clicks, or detect special key combinations.
+    </description>
+    <summary>This library allows you to tap keyboard and mouse, to detect and record their activity even when an application is inactive and runs in background.</summary>
+    <copyright>(c) George Mamaladze 2000-2018</copyright>
+    <tags>keyboard mouse hook event global spy</tags>
+    <iconUrl>https://raw.githubusercontent.com/gmamaladze/globalmousekeyhook/master/mouse-keyboard-hook-logo64x64.png</iconUrl>
+  </metadata>
+</package>
