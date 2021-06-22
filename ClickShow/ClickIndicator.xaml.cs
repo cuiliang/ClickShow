@@ -31,6 +31,8 @@ namespace ClickShow
 
             SourceInitialized += OnSourceInitialized;
 
+            RenderOptions.SetBitmapScalingMode(TheCircle, BitmapScalingMode.LowQuality);
+
             // 初始化动画
             double interval = 0.4;
             _storyboard = new Storyboard();
