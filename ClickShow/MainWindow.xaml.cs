@@ -166,6 +166,12 @@ namespace ClickShow
             _notifyIcon.BalloonTipText = "ClickShow\n鼠标点击提示器\n点击打开";
             _notifyIcon.Click += NotifyIconOnClick;
             _notifyIcon.Visible = true;
+
+            var contextMenu = new System.Windows.Forms.ContextMenu();
+            var menuItem = new System.Windows.Forms.MenuItem("退出", (sender, args) => { this.Close(); });
+            contextMenu.MenuItems.Add(menuItem);
+
+            _notifyIcon.ContextMenu = contextMenu;
         }
 
         private void OnStateChanged(object sender, EventArgs e)
@@ -236,6 +242,7 @@ namespace ClickShow
 
         private void OnClosed(object sender, EventArgs e)
         {
+            _mouseHook.MouseMove -= MouseHookOnMouseMove;
             _mouseHook.MouseDown -= MouseHookOnMouseDown;
             _mouseHook.Stop();
            
@@ -244,6 +251,8 @@ namespace ClickShow
             {
                 x.Close();
             }
+
+            _hoverDot.Close();
         }
 
 
