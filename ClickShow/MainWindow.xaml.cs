@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,10 +15,12 @@ using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using Brush = System.Windows.Media.Brush;
+using Brushes = System.Windows.Media.Brushes;
 using MessageBox = System.Windows.MessageBox;
 using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
 
@@ -33,19 +38,57 @@ namespace ClickShow
         // 窗口缓存,解决连续点击的显示问题
         private IList<ClickIndicator> _clickIndicators = new List<ClickIndicator>();
 
-        private System.Windows.Forms.NotifyIcon notifyIcon = null;
+        private HoverDot _hoverDot = new HoverDot();
 
-        public static readonly DependencyProperty EnabledProperty = DependencyProperty.Register(
-            "Enabled", typeof(bool), typeof(MainWindow), new PropertyMetadata(true));
+        private System.Windows.Forms.NotifyIcon _notifyIcon = null;
+
+        #region 是否启用点击圈
+
+
+        public static readonly DependencyProperty EnableClickCircleProperty = DependencyProperty.Register(
+            "EnableClickCircle", typeof(bool), typeof(MainWindow), new PropertyMetadata(true));
 
         /// <summary>
         /// 是否开启显示
         /// </summary>
-        public bool Enabled
+        public bool EnableClickCircle
         {
-            get { return (bool)GetValue(EnabledProperty); }
-            set { SetValue(EnabledProperty, value); }
+            get { return (bool)GetValue(EnableClickCircleProperty); }
+            set { SetValue(EnableClickCircleProperty, value); }
         }
+
+        #endregion
+
+        #region 是否启用悬浮标
+
+        public static readonly DependencyProperty EnableHoverProperty = DependencyProperty.Register(
+            "EnableHover", typeof(bool), typeof(MainWindow), new PropertyMetadata(false, EnableHoverDotChanged));
+
+        private static void EnableHoverDotChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            (d as MainWindow).UpdateHoverDotVisibility();
+        }
+
+        private void UpdateHoverDotVisibility()
+        {
+            if (EnableHover)
+            {
+                _hoverDot.Show();
+            }
+            else
+            {
+                _hoverDot.Hide();
+            }
+        }
+
+        public bool EnableHover
+        {
+            get { return (bool) GetValue(EnableHoverProperty); }
+            set { SetValue(EnableHoverProperty, value); }
+        }
+
+        #endregion
+
 
         private ClickIndicator GetClickIndicatorWindow()
         {
@@ -73,25 +116,77 @@ namespace ClickShow
         {
             InitializeComponent();
 
-            
-
 
             Closed += OnClosed;
 
             Loaded += (sender, args) =>
             {
                 WindowState = WindowState.Minimized;
+                UpdateHoverDotVisibility();
             };
+            StateChanged += OnStateChanged;
+
 
             // Note: for the application hook, use the Hook.AppEvents() instead
             _mouseHook = new MouseHook.MouseHook();
             _mouseHook.MouseDown += MouseHookOnMouseDown;
+            _mouseHook.MouseMove += MouseHookOnMouseMove;
             _mouseHook.Start();
+
+            CreateNotifyIcon();
+        }
+
+        private void MouseHookOnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (EnableHover)
+            {
+                Dispatcher.InvokeAsync(() =>
+                {
+                    var ratio = DpiHelper.GetPointDpiRatio(e.Location);
+
+                    var size = (int) (60 * ratio);
+                    MoveWindow(new WindowInteropHelper(_hoverDot).Handle,
+                        e.Location.X - (int) (size / 2),
+                        e.Location.Y - (int) (size / 2), size, size, true);
+                });
+            }
+        }
+
+        private void CreateNotifyIcon()
+        {
+            _notifyIcon = new System.Windows.Forms.NotifyIcon();
+            using (Stream iconStream = System.Windows.Application
+                .GetResourceStream(new Uri(
+                    $"pack://application:,,,/{Assembly.GetEntryAssembly().GetName().Name};component/click.ico"))
+                .Stream)
+            {
+                _notifyIcon.Icon = new System.Drawing.Icon(iconStream);
+            }
+
+            _notifyIcon.BalloonTipText = "ClickShow\n鼠标点击提示器\n点击打开";
+            _notifyIcon.Click += NotifyIconOnClick;
+            _notifyIcon.Visible = true;
+        }
+
+        private void OnStateChanged(object sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized)
+            {
+                this.Hide();
+            }
+        }
+
+        private void NotifyIconOnClick(object sender, EventArgs e)
+        {
+           
+            this.Show();
+            this.Activate();
+            this.WindowState = WindowState.Normal;
         }
 
         private void MouseHookOnMouseDown(object sender, MouseEventArgs e)
         {
-            if (!Enabled)
+            if (!EnableClickCircle)
             {
                 return;
             }

@@ -76,7 +76,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="WindowHelper.cs" />
     <Page Include="ClickIndicator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="HoverDot.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -92,6 +97,9 @@
       <DependentUpon>ClickIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="DpiHelper.cs" />
+    <Compile Include="HoverDot.xaml.cs">
+      <DependentUpon>HoverDot.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MouseHook\GlobalHook.cs" />
     <Compile Include="MouseHook\HookType.cs" />
     <Compile Include="MainWindow.xaml.cs">
@@ -142,6 +150,8 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="NotifyIcon\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

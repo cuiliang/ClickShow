@@ -23,8 +23,15 @@
             <CheckBox
                 Margin="10"
                 VerticalContentAlignment="Center"
-                Content="开启显示 / Enable Show Click"
-                IsChecked="{Binding ElementName=TheWindow, Path=Enabled}" />
+                Content="显示点击提示 / Show Click Event"
+                IsChecked="{Binding ElementName=TheWindow, Path=EnableClickCircle}"
+                ToolTip="点击时显示波纹特效" />
+            <CheckBox
+                Margin="10"
+                VerticalContentAlignment="Center"
+                Content="显示位置提示 / Show Cursor Position"
+                IsChecked="{Binding ElementName=TheWindow, Path=EnableHover}"
+                ToolTip="在鼠标指针周围显示原点，跟随鼠标移动" />
 
             <TextBlock Margin="10" HorizontalAlignment="Center">
                 <Hyperlink NavigateUri="https://github.com/cuiliang/clickshow" RequestNavigate="Hyperlink_OnRequestNavigate">反馈与更新 / Homepage</Hyperlink>

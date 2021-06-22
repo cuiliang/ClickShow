@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -85,7 +84,7 @@ namespace ClickShow
 
         private void OnSourceInitialized(object sender, EventArgs e)
         {
-            SetWindowExTransparent(new WindowInteropHelper(this).Handle);
+            WindowHelper.SetWindowExTransparent(new WindowInteropHelper(this).Handle);
         }
 
         private void StoryboardOnCompleted(object sender, EventArgs e)
@@ -96,45 +95,6 @@ namespace ClickShow
             Opacity = 0;
 
             IsIdle = true;
-
-            //this.Top = -3000;
-            //this.Left = -3000;
-            //InvalidateVisual();
-
-            //Task.Run(() =>
-            //{
-            //    Dispatcher.InvokeAsync(() =>
-            //    {
-            //     //   this.Hide();
-
-            //        IsIdle = true;
-            //    });
-            //});
-
-
-        }
-
-        
-        
-
-        const int WS_EX_TRANSPARENT = 0x00000020;
-        const int GWL_EXSTYLE = (-20);
-
-        [DllImport("user32.dll")]
-        static extern int GetWindowLong(IntPtr hwnd, int index);
-
-        [DllImport("user32.dll")]
-        static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
-
-        /// <summary>
-        /// 让鼠标事件穿透
-        /// https://stackoverflow.com/questions/2842667/how-to-create-a-semi-transparent-window-in-wpf-that-allows-mouse-events-to-pass
-        /// </summary>
-        /// <param name="hwnd"></param>
-        public static void SetWindowExTransparent(IntPtr hwnd)
-        {
-            var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT);
         }
     }
 }
