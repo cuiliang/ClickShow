@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:ClickShow"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Name="TheWindow"
-    Title="点击显示器"
+    Title="ClickShow"
     Width="800"
     Height="450"
     MinWidth="250"
@@ -20,10 +20,14 @@
             VerticalAlignment="Center"
             Orientation="Horizontal">
             <CheckBox
-                Margin="0,0,20,0"
+                Margin="10"
                 VerticalContentAlignment="Center"
-                Content="开启显示"
+                Content=""
                 IsChecked="{Binding ElementName=TheWindow, Path=Enabled}" />
+
+            <TextBlock Margin="10" HorizontalAlignment="Center">
+                <Hyperlink NavigateUri="https://github.com/cuiliang/clickshow">反馈与更新</Hyperlink>
+            </TextBlock>
 
         </StackPanel>
     </Grid>
