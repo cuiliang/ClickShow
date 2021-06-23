@@ -18,6 +18,11 @@
 ![test](https://user-images.githubusercontent.com/1972649/122925974-f17ead00-d399-11eb-9c57-9b2f14dd5973.gif)
 
 
-# 已知问题
-- 在Windows7下似乎没效果
-- 
+# 更新历史
+
+## 1.3
+- 解决Win7下不生效的问题
+- 支持多屏Dpi感知
+- 支持随Windows自动启动
+- 换了一个蓝色的图标（导致程序变大了，现在210k）
+
