@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.3.0.0" name="ClickShow"/>
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+	  <security>
+		  <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+			  <requestedExecutionLevel level="asInvoker" uiAccess="true" />
+		  </requestedPrivileges>
+		  <applicationRequestMinimum>
+			  <defaultAssemblyRequest permissionSetReference="Custom" />
+			  <PermissionSet ID="Custom" SameSite="site" Unrestricted="true" />
+		  </applicationRequestMinimum>
+	  </security>
+  </trustInfo>
+
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+	    <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+	    <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+    </windowsSettings>
+  </application>
+  
+
+
+</assembly>
