@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,7 @@ namespace ClickShow
             InitializeComponent();
 
             SourceInitialized += OnSourceInitialized;
+            DpiChanged += OnDpiChanged;
 
             RenderOptions.SetBitmapScalingMode(TheCircle, BitmapScalingMode.LowQuality);
 
@@ -62,8 +64,20 @@ namespace ClickShow
             //Play();
         }
 
+        private void OnDpiChanged(object sender, DpiChangedEventArgs e)
+        {
+            DpiHasChanged = true;
+            //Debug.WriteLine($"OnDpiChange width:{this.Width}  actualWidth:{this.ActualWidth}");
+            //InvalidateArrange();
+            //InvalidateMeasure();
+            //InvalidateVisual();
+            //Debug.WriteLine($"OnDpiChangeAfter width:{this.Width}  actualWidth:{this.ActualWidth}");
+        }
+
 
         public bool IsIdle { get; private set; } = false;
+
+        public bool DpiHasChanged { get; private set; } = false;
 
         public void Prepare()
         {
@@ -95,6 +109,7 @@ namespace ClickShow
             Opacity = 0;
 
             IsIdle = true;
+            DpiHasChanged = false;
         }
     }
 }

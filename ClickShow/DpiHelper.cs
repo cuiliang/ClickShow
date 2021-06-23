@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -17,12 +18,14 @@ namespace ClickShow
         {
             var screen = Screen.FromPoint(point);
 
+            Debug.WriteLine($"screen:{screen.DeviceName}");
+
             if (_cache.ContainsKey(screen.DeviceName))
             {
                 return _cache[screen.DeviceName];
             }
 
-            ScreenInformations.GetDpi(point, DpiType.RAW, out uint dpiX, out _);
+            ScreenInformations.GetDpi(point, DpiType.EFFECTIVE, out uint dpiX, out _);
 
             var ratio =  (double) dpiX / 96.0;
             _cache[screen.DeviceName] = ratio;

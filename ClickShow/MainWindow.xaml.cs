@@ -138,8 +138,14 @@ namespace ClickShow
             CreateNotifyIcon();
         }
 
+        /// <summary>
+        /// 鼠标移动处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MouseHookOnMouseMove(object sender, MouseEventArgs e)
         {
+            
             if (EnableHover)
             {
                 Dispatcher.InvokeAsync(() =>
@@ -149,7 +155,7 @@ namespace ClickShow
                     var size = (int) (60 * ratio);
                     MoveWindow(new WindowInteropHelper(_hoverDot).Handle,
                         e.Location.X - (int) (size / 2),
-                        e.Location.Y - (int) (size / 2), size, size, true);
+                        e.Location.Y - (int) (size / 2), size, size, false);
                 });
             }
         }
@@ -170,7 +176,7 @@ namespace ClickShow
             _notifyIcon.Visible = true;
 
             var contextMenu = new System.Windows.Forms.ContextMenu();
-            var menuItem = new System.Windows.Forms.MenuItem("退出", (sender, args) => { this.Close(); });
+            var menuItem = new System.Windows.Forms.MenuItem("退出(Exit)", (sender, args) => { this.Close(); });
             contextMenu.MenuItems.Add(menuItem);
 
             _notifyIcon.ContextMenu = contextMenu;
@@ -199,7 +205,10 @@ namespace ClickShow
                 return;
             }
 
+           
+
             var point = e.Location;
+            
             var button = e.Button;
 
 
@@ -232,12 +241,21 @@ namespace ClickShow
 
                 indicator.Play(brush);
 
+               
                 var size = (int)(150 * ratio);
+                
                 MoveWindow(new WindowInteropHelper(indicator).Handle,
                     point.X - (int)(size / 2),
                     point.Y - (int)(size / 2), size, size, false);
 
-
+                
+                if (indicator.DpiHasChanged)
+                {
+                    // 
+                    MoveWindow(new WindowInteropHelper(indicator).Handle,
+                        point.X - (int)(size / 2),
+                        point.Y - (int)(size / 2), size, size, false);
+                }
 
             });
         }
@@ -260,8 +278,6 @@ namespace ClickShow
 
 
 
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
         private void BtnClose_OnClick(object sender, RoutedEventArgs e)
         {
@@ -282,5 +298,16 @@ namespace ClickShow
                 MessageBox.Show("无法打开网址：https://github.com/cuiliang/clickshow");
             }
         }
+
+
+
+
+        #region Native 调用
+
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+
+        #endregion
     }
 }
