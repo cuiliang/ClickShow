@@ -125,25 +125,34 @@ namespace ClickShow
 
             Closed += OnClosed;
 
-            Loaded += (sender, args) =>
-            {
-                WindowState = WindowState.Minimized;
-                UpdateHoverDotVisibility();
+            Loaded += OnLoaded;
 
-                // Note: for the application hook, use the Hook.AppEvents() instead
-                _mouseHook = new MouseHook.MouseHook();
-                _mouseHook.MouseDown += MouseHookOnMouseDown;
-                _mouseHook.MouseMove += MouseHookOnMouseMove;
-                _mouseHook.Start();
-
-                LoadAutoStartStatus();
-            };
             StateChanged += OnStateChanged;
 
 
             
 
             CreateNotifyIcon();
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+
+            WindowState = WindowState.Minimized;
+
+            UpdateHoverDotVisibility();
+
+            // 
+            _mouseHook = new MouseHook.MouseHook();
+            _mouseHook.MouseDown += MouseHookOnMouseDown;
+            _mouseHook.MouseMove += MouseHookOnMouseMove;
+            _mouseHook.Start();
+
+            // update auto startup checkbox
+            LoadAutoStartStatus();
+
+            //
+            Title = $"ClickShow {Assembly.GetExecutingAssembly().GetName().Version.ToString()}";
         }
 
         private void CreateNotifyIcon()
