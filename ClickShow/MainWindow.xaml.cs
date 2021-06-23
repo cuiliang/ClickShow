@@ -147,7 +147,7 @@ namespace ClickShow
             _notifyIcon = new System.Windows.Forms.NotifyIcon();
             using (Stream iconStream = System.Windows.Application
                 .GetResourceStream(new Uri(
-                    $"pack://application:,,,/{Assembly.GetEntryAssembly().GetName().Name};component/click.ico"))
+                    $"pack://application:,,,/{Assembly.GetEntryAssembly().GetName().Name};component/clickshow.ico"))
                 .Stream)
             {
                 _notifyIcon.Icon = new System.Drawing.Icon(iconStream);
