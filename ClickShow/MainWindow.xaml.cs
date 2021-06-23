@@ -250,11 +250,9 @@ namespace ClickShow
 
                    
                 }
-                catch (Exception ex)
+                catch 
                 {
-#if DEBUG
-                    File.AppendAllText(@"d:\test.txt", $"Error:{ex.Message} {ex.StackTrace}");
-#endif
+
                 }
 
             });
@@ -315,7 +313,7 @@ namespace ClickShow
             {
                 Process.Start("https://github.com/cuiliang/clickshow");
             }
-            catch (Exception ex)
+            catch 
             {
                 MessageBox.Show("无法打开网址：https://github.com/cuiliang/clickshow");
             }
@@ -385,15 +383,14 @@ namespace ClickShow
         {
             var handle = new WindowInteropHelper(window).Handle;
 
-            //WindowHelper.SetWindowPos(handle, 
-            //    (IntPtr)WindowHelper.SpecialWindowHandles.HWND_TOPMOST, 
-            //    X, Y, 
-            //    nWidth, nHeight,
-            //    WindowHelper.SetWindowPosFlags.SWP_SHOWWINDOW
-            //    | WindowHelper.SetWindowPosFlags.SWP_NOSIZE
-            //    | WindowHelper.SetWindowPosFlags.SWP_NOZORDER);
+            WindowHelper.SetWindowPos(handle,
+                (IntPtr)WindowHelper.SpecialWindowHandles.HWND_TOPMOST,
+                X, Y,
+                nWidth, nHeight,
+                WindowHelper.SetWindowPosFlags.SWP_NOACTIVATE
+                );
 
-            MoveWindow(handle, X, Y, nWidth, nHeight, false);
+            //MoveWindow(handle, X, Y, nWidth, nHeight, false);
         }
 
         [DllImport("user32.dll", SetLastError = true)]
