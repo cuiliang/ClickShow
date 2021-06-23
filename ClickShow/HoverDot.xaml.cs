@@ -25,6 +25,24 @@ namespace ClickShow
             InitializeComponent();
 
             SourceInitialized += OnSourceInitialized;
+            DpiChanged += OnDpiChanged;
+        }
+
+        private void OnDpiChanged(object sender, DpiChangedEventArgs e)
+        {
+            _currentDpi = e.NewDpi;
+        }
+
+        private DpiScale _currentDpi;
+
+        public double GetDpiScale()
+        {
+            if (_currentDpi.DpiScaleX < 0.1)
+            {
+                _currentDpi = VisualTreeHelper.GetDpi(this);
+            }
+            
+            return _currentDpi.DpiScaleX;
         }
 
         private void OnSourceInitialized(object sender, EventArgs e)

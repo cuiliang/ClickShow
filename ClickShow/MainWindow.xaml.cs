@@ -15,6 +15,7 @@ using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -33,6 +34,9 @@ namespace ClickShow
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const double INDICATOR_SIZE = 150;
+        private const double DOT_SIZE = 60;
+
         private MouseHook.MouseHook _mouseHook;
 
         // 窗口缓存,解决连续点击的显示问题
@@ -138,28 +142,6 @@ namespace ClickShow
             CreateNotifyIcon();
         }
 
-        /// <summary>
-        /// 鼠标移动处理
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void MouseHookOnMouseMove(object sender, MouseEventArgs e)
-        {
-            
-            if (EnableHover)
-            {
-                Dispatcher.InvokeAsync(() =>
-                {
-                    var ratio = DpiHelper.GetPointDpiRatio(e.Location);
-
-                    var size = (int) (60 * ratio);
-                    MoveWindow(new WindowInteropHelper(_hoverDot).Handle,
-                        e.Location.X - (int) (size / 2),
-                        e.Location.Y - (int) (size / 2), size, size, false);
-                });
-            }
-        }
-
         private void CreateNotifyIcon()
         {
             _notifyIcon = new System.Windows.Forms.NotifyIcon();
@@ -205,7 +187,9 @@ namespace ClickShow
                 return;
             }
 
-           
+
+
+
 
             var point = e.Location;
             
@@ -214,50 +198,84 @@ namespace ClickShow
 
             Dispatcher.InvokeAsync(() =>
             {
-
-                var ratio = DpiHelper.GetPointDpiRatio(point);
-
-                var indicator = GetClickIndicatorWindow();
-
-                Brush brush = Brushes.DodgerBlue;
-
-                switch (button)
+                try
                 {
-                    case MouseButtons.Left:
-                        break;
-                    case MouseButtons.Middle:
-                        brush = Brushes.Green;
-                        break;
-                    case MouseButtons.Right:
-                        brush = Brushes.OrangeRed;
-                        break;
-                    case MouseButtons.XButton1:
-                        brush = Brushes.Gray;
-                        break;
-                    case MouseButtons.XButton2:
-                        brush = Brushes.BlueViolet;
-                        break;
+                    
+
+                    var indicator = GetClickIndicatorWindow();
+
+                    Brush brush = Brushes.DodgerBlue;
+
+                    switch (button)
+                    {
+                        case MouseButtons.Left:
+                            break;
+                        case MouseButtons.Middle:
+                            brush = Brushes.Green;
+                            break;
+                        case MouseButtons.Right:
+                            brush = Brushes.OrangeRed;
+                            break;
+                        case MouseButtons.XButton1:
+                            brush = Brushes.Gray;
+                            break;
+                        case MouseButtons.XButton2:
+                            brush = Brushes.BlueViolet;
+                            break;
+                    }
+
+
+                    indicator.Play(brush);
+
+                    var size = (int) (INDICATOR_SIZE * indicator.GetDpiScale());
+
+                    MoveWindowWrapper(indicator,
+                        point.X - (int) (size / 2),
+                        point.Y - (int) (size / 2), size, size);
+
+
+
+                    if (indicator.DpiHasChanged)
+                    {
+                        size = (int)(INDICATOR_SIZE * indicator.GetDpiScale());
+                        // 
+                        MoveWindowWrapper(indicator,
+                            point.X - (int) (size / 2),
+                            point.Y - (int) (size / 2), size, size);
+                    }
+
+                   
                 }
-
-                indicator.Play(brush);
-
-               
-                var size = (int)(150 * ratio);
-                
-                MoveWindow(new WindowInteropHelper(indicator).Handle,
-                    point.X - (int)(size / 2),
-                    point.Y - (int)(size / 2), size, size, false);
-
-                
-                if (indicator.DpiHasChanged)
+                catch (Exception ex)
                 {
-                    // 
-                    MoveWindow(new WindowInteropHelper(indicator).Handle,
-                        point.X - (int)(size / 2),
-                        point.Y - (int)(size / 2), size, size, false);
+#if DEBUG
+                    File.AppendAllText(@"d:\test.txt", $"Error:{ex.Message} {ex.StackTrace}");
+#endif
                 }
 
             });
+        }
+
+        /// <summary>
+        /// 鼠标移动处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MouseHookOnMouseMove(object sender, MouseEventArgs e)
+        {
+
+
+            if (EnableHover)
+            {
+
+                Dispatcher.InvokeAsync(() =>
+                {
+                    var size = (int) (DOT_SIZE * _hoverDot.GetDpiScale());
+                    MoveWindowWrapper(_hoverDot,
+                        e.Location.X - (int) (size / 2),
+                        e.Location.Y - (int) (size / 2), size, size);
+                });
+            }
         }
 
         private void OnClosed(object sender, EventArgs e)
@@ -300,10 +318,22 @@ namespace ClickShow
         }
 
 
-
-
         #region Native 调用
 
+        public void MoveWindowWrapper(Window window, int X, int Y, int nWidth, int nHeight)
+        {
+            var handle = new WindowInteropHelper(window).Handle;
+
+            //WindowHelper.SetWindowPos(handle, 
+            //    (IntPtr)WindowHelper.SpecialWindowHandles.HWND_TOPMOST, 
+            //    X, Y, 
+            //    nWidth, nHeight,
+            //    WindowHelper.SetWindowPosFlags.SWP_SHOWWINDOW
+            //    | WindowHelper.SetWindowPosFlags.SWP_NOSIZE
+            //    | WindowHelper.SetWindowPosFlags.SWP_NOZORDER);
+
+            MoveWindow(handle, X, Y, nWidth, nHeight, false);
+        }
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);

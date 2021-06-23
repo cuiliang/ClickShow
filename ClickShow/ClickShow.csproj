@@ -99,7 +99,6 @@
     <Compile Include="ClickIndicator.xaml.cs">
       <DependentUpon>ClickIndicator.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DpiHelper.cs" />
     <Compile Include="HoverDot.xaml.cs">
       <DependentUpon>HoverDot.xaml</DependentUpon>
     </Compile>

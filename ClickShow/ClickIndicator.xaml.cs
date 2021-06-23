@@ -67,15 +67,27 @@ namespace ClickShow
         private void OnDpiChanged(object sender, DpiChangedEventArgs e)
         {
             DpiHasChanged = true;
-            //Debug.WriteLine($"OnDpiChange width:{this.Width}  actualWidth:{this.ActualWidth}");
-            //InvalidateArrange();
-            //InvalidateMeasure();
-            //InvalidateVisual();
-            //Debug.WriteLine($"OnDpiChangeAfter width:{this.Width}  actualWidth:{this.ActualWidth}");
+            _currentDpi = e.NewDpi;
+        }
+
+        public double GetDpiScale()
+        {
+            if (_currentDpi.DpiScaleX < 0.1)
+            {
+                _currentDpi = VisualTreeHelper.GetDpi(this);
+
+                
+            }
+
+            return _currentDpi.DpiScaleX;
         }
 
 
         public bool IsIdle { get; private set; } = false;
+
+        private DpiScale _currentDpi;
+
+        
 
         public bool DpiHasChanged { get; private set; } = false;
 
@@ -95,6 +107,8 @@ namespace ClickShow
 
             this.Show();
         }
+
+
 
         private void OnSourceInitialized(object sender, EventArgs e)
         {
