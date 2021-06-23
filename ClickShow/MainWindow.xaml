@@ -33,6 +33,14 @@
                 IsChecked="{Binding ElementName=TheWindow, Path=EnableHover}"
                 ToolTip="在鼠标指针周围显示原点，跟随鼠标移动" />
 
+            <CheckBox
+                Name="ChkStartWithWindows"
+                Margin="10"
+                VerticalContentAlignment="Center"
+                Click="ChkStartWithWindows_OnClick"
+                Content="随Windows启动 / Startup With Windows"
+                ToolTip="是否开机自动启动" />
+
             <TextBlock Margin="10" HorizontalAlignment="Center">
                 <Hyperlink NavigateUri="https://github.com/cuiliang/clickshow" RequestNavigate="Hyperlink_OnRequestNavigate">反馈与更新 / Homepage</Hyperlink>
             </TextBlock>

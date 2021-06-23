@@ -20,8 +20,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
+using Exception = System.Exception;
 using MessageBox = System.Windows.MessageBox;
 using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
 
@@ -133,6 +135,8 @@ namespace ClickShow
                 _mouseHook.MouseDown += MouseHookOnMouseDown;
                 _mouseHook.MouseMove += MouseHookOnMouseMove;
                 _mouseHook.Start();
+
+                LoadAutoStartStatus();
             };
             StateChanged += OnStateChanged;
 
@@ -318,6 +322,63 @@ namespace ClickShow
         }
 
 
+        #region 自动启动
+
+        // The path to the key where Windows looks for startup applications
+        RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+        private string AppName = "ClickShow";
+        private void LoadAutoStartStatus()
+        {
+            try
+            {
+                // Check to see the current state (running at startup or not)
+                if (rkApp.GetValue(AppName) == null)
+                {
+                    // The value doesn't exist, the application is not set to run at startup
+                    ChkStartWithWindows.IsChecked = false;
+                }
+                else
+                {
+                    // The value exists, the application is set to run at startup
+                    ChkStartWithWindows.IsChecked = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("无法加载开机自动启动状态。" + ex.Message);
+            }
+        }
+
+
+        private void SaveAutoStart()
+        {
+            try
+            {
+                if (ChkStartWithWindows.IsChecked == true)
+                {
+                    // Add the value in the registry so that the application runs at startup
+                    rkApp.SetValue(AppName, Process.GetCurrentProcess().MainModule.FileName);
+                }
+                else
+                {
+                    // Remove the value from the registry so that the application doesn't start
+                    rkApp.DeleteValue(AppName, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("无法保存开机自动启动状态。" + ex.Message);
+            }
+            
+        }
+
+        private void ChkStartWithWindows_OnClick(object sender, RoutedEventArgs e)
+        {
+            SaveAutoStart();
+        }
+        #endregion
+
+
         #region Native 调用
 
         public void MoveWindowWrapper(Window window, int X, int Y, int nWidth, int nHeight)
@@ -339,5 +400,7 @@ namespace ClickShow
         internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
         #endregion
+
+       
     }
 }

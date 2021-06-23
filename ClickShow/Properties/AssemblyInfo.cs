@@ -8,12 +8,12 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ClickShow")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Show Mouse Clicks.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("https://github.com/cuiliang")]
 [assembly: AssemblyProduct("ClickShow")]
 [assembly: AssemblyCopyright("Copyright ©  2021 By CuiLiang")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("https://github.com/cuiliang")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -51,5 +51,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.2.0.0")]
-[assembly: AssemblyFileVersion("1.2.0.0")]
+[assembly: AssemblyVersion("1.3.0.0")]
+[assembly: AssemblyFileVersion("1.3.0.0")]
