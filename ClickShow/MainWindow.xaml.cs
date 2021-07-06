@@ -26,6 +26,8 @@ using Brushes = System.Windows.Media.Brushes;
 using Exception = System.Exception;
 using MessageBox = System.Windows.MessageBox;
 using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
+using MouseButtonState = ClickShow.Entities.MouseButtonState;
+using Point = System.Drawing.Point;
 
 namespace ClickShow
 {
@@ -36,8 +38,10 @@ namespace ClickShow
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const double INDICATOR_SIZE = 150;
-        private const double DOT_SIZE = 60;
+        private const double INDICATOR_SIZE = 150;  //波纹窗口大小
+        private const double DOT_SIZE = 60;         //鼠标位置悬浮标大小
+        private const long UP_SHOW_DISTANCE = 200;  //移动超过多少像素后显示抬起特效
+        private const long UP_TICKS_DELTA = 500;   //长按多久后抬起显示抬起特效
 
         private MouseHook.MouseHook _mouseHook;
 
@@ -95,7 +99,36 @@ namespace ClickShow
 
         #endregion
 
+        /// <summary>
+        /// 各个鼠标按键对应的颜色画刷
+        /// </summary>
+        private readonly IDictionary<MouseButtons, Brush> _buttonBrushes = new Dictionary<MouseButtons, Brush>()
+        {
+            {MouseButtons.None, Brushes.Black},
+            {MouseButtons.Left, Brushes.DodgerBlue},
+            {MouseButtons.Middle, Brushes.Green},
+            {MouseButtons.Right, Brushes.OrangeRed},
+            {MouseButtons.XButton1, Brushes.Gray},
+            {MouseButtons.XButton2, Brushes.BlueViolet},
+        };
 
+        /// <summary>
+        /// 各按键的状态，用于判断是否应该显示抬起特效。
+        /// </summary>
+        private readonly IDictionary<MouseButtons, MouseButtonState> _buttonStates =
+            new Dictionary<MouseButtons, MouseButtonState>()
+            {
+                {MouseButtons.Left, new MouseButtonState()},
+                {MouseButtons.Middle, new MouseButtonState()},
+                {MouseButtons.Right, new MouseButtonState()},
+                {MouseButtons.XButton1, new MouseButtonState()},
+                {MouseButtons.XButton2, new MouseButtonState()},
+            };
+
+        /// <summary>
+        /// 获取一个可用的波纹窗口。
+        /// </summary>
+        /// <returns>波纹窗口对象</returns>
         private ClickIndicator GetClickIndicatorWindow()
         {
             var indicator = _clickIndicators.FirstOrDefault(x => x.IsIdle);
@@ -146,6 +179,7 @@ namespace ClickShow
             _mouseHook = new MouseHook.MouseHook();
             _mouseHook.MouseDown += MouseHookOnMouseDown;
             _mouseHook.MouseMove += MouseHookOnMouseMove;
+            _mouseHook.MouseUp += MouseHookOnMouseUp;
             _mouseHook.Start();
 
             // update auto startup checkbox
@@ -153,6 +187,27 @@ namespace ClickShow
 
             //
             Title = $"ClickShow {Assembly.GetExecutingAssembly().GetName().Version.ToString()}";
+        }
+
+        /// <summary>
+        /// 鼠标抬起
+        /// </summary>
+        private void MouseHookOnMouseUp(object sender, MouseEventArgs e)
+        {
+            var point = e.Location;
+            var downState = _buttonStates[e.Button];
+
+            // 距离超过设定，或者抬起时间超过设定，显示抬起特效。
+            if (((point.X - downState.DownPosition.X) * (point.X - downState.DownPosition.X)
+                 + (point.Y - downState.DownPosition.Y) * (point.Y - downState.DownPosition.Y)) > UP_SHOW_DISTANCE * UP_SHOW_DISTANCE
+                || (Environment.TickCount > (downState.DownTimeTicks + UP_TICKS_DELTA))
+                )
+            {
+                Dispatcher.InvokeAsync(() =>
+                {
+                    ShowIndicator(e.Button, point, false);
+                });
+            }
         }
 
         private void CreateNotifyIcon()
@@ -177,6 +232,9 @@ namespace ClickShow
             _notifyIcon.ContextMenu = contextMenu;
         }
 
+        /// <summary>
+        /// 窗口状态改变了
+        /// </summary>
         private void OnStateChanged(object sender, EventArgs e)
         {
             if (WindowState == WindowState.Minimized)
@@ -193,6 +251,9 @@ namespace ClickShow
             this.WindowState = WindowState.Normal;
         }
 
+        /// <summary>
+        /// 鼠标按下事件
+        /// </summary>
         private void MouseHookOnMouseDown(object sender, MouseEventArgs e)
         {
             if (!EnableClickCircle)
@@ -201,70 +262,53 @@ namespace ClickShow
             }
 
 
-
-
-
             var point = e.Location;
             
             var button = e.Button;
 
+            // 记录按下状态（时间与位置）
+            _buttonStates[button].DownPosition = point;
+            _buttonStates[button].DownTimeTicks = Environment.TickCount;
 
-            Dispatcher.InvokeAsync(() =>
+
+            // 显示特效
+            Dispatcher.InvokeAsync(() => { ShowIndicator(button, point, true); });
+        }
+
+        /// <summary>
+        /// 显示波纹特效
+        /// </summary>
+        /// <param name="button">按键</param>
+        /// <param name="point">位置</param>
+        /// <param name="isDown">是否按下</param>
+        private void ShowIndicator(MouseButtons button, Point point, bool isDown)
+        {
+            try
             {
-                try
+                var indicator = GetClickIndicatorWindow();
+
+                Brush brush = _buttonBrushes[button];
+
+                indicator.Play(brush, isDown);
+
+                var size = (int) (INDICATOR_SIZE * indicator.GetDpiScale());
+
+                MoveWindowWrapper(indicator,
+                    point.X - (int) (size / 2),
+                    point.Y - (int) (size / 2), size, size);
+
+                if (indicator.DpiHasChanged)
                 {
-                    
-
-                    var indicator = GetClickIndicatorWindow();
-
-                    Brush brush = Brushes.DodgerBlue;
-
-                    switch (button)
-                    {
-                        case MouseButtons.Left:
-                            break;
-                        case MouseButtons.Middle:
-                            brush = Brushes.Green;
-                            break;
-                        case MouseButtons.Right:
-                            brush = Brushes.OrangeRed;
-                            break;
-                        case MouseButtons.XButton1:
-                            brush = Brushes.Gray;
-                            break;
-                        case MouseButtons.XButton2:
-                            brush = Brushes.BlueViolet;
-                            break;
-                    }
-
-
-                    indicator.Play(brush);
-
-                    var size = (int) (INDICATOR_SIZE * indicator.GetDpiScale());
-
+                    size = (int) (INDICATOR_SIZE * indicator.GetDpiScale());
+                    // 
                     MoveWindowWrapper(indicator,
                         point.X - (int) (size / 2),
                         point.Y - (int) (size / 2), size, size);
-
-
-
-                    if (indicator.DpiHasChanged)
-                    {
-                        size = (int)(INDICATOR_SIZE * indicator.GetDpiScale());
-                        // 
-                        MoveWindowWrapper(indicator,
-                            point.X - (int) (size / 2),
-                            point.Y - (int) (size / 2), size, size);
-                    }
-
-                   
                 }
-                catch 
-                {
-
-                }
-
-            });
+            }
+            catch
+            {
+            }
         }
 
         /// <summary>
@@ -274,11 +318,8 @@ namespace ClickShow
         /// <param name="e"></param>
         private void MouseHookOnMouseMove(object sender, MouseEventArgs e)
         {
-
-
             if (EnableHover)
             {
-
                 Dispatcher.InvokeAsync(() =>
                 {
                     var size = (int) (DOT_SIZE * _hoverDot.GetDpiScale());
@@ -304,8 +345,6 @@ namespace ClickShow
 
             _hoverDot.Close();
         }
-
-
 
 
         private void BtnClose_OnClick(object sender, RoutedEventArgs e)

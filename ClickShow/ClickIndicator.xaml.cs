@@ -22,7 +22,8 @@ namespace ClickShow
     /// </summary>
     public partial class ClickIndicator : Window
     {
-        private Storyboard _storyboard;
+        private Storyboard _mouseDownStoryBoard;
+        private Storyboard _mouseUpStoryBoard;
 
         public ClickIndicator()
         {
@@ -34,34 +35,75 @@ namespace ClickShow
 
             RenderOptions.SetBitmapScalingMode(TheCircle, BitmapScalingMode.LowQuality);
 
+            CreateMouseDownStoryBoard();
+            CreateMouseUpStoryBoard();
+            //Play();
+        }
+
+        /// <summary>
+        /// 鼠标抬起特效
+        /// </summary>
+        private void CreateMouseUpStoryBoard()
+        {
+            // 初始化动画
+            double interval = 0.3;
+            _mouseUpStoryBoard = new Storyboard();
+            _mouseUpStoryBoard.FillBehavior = FillBehavior.Stop;
+
+
+            var widthAnimation = new DoubleAnimation(toValue: this.Width / 2, new Duration(TimeSpan.FromSeconds(interval)));
+            Storyboard.SetTargetProperty(widthAnimation, new PropertyPath("Width"));
+            Storyboard.SetTarget(widthAnimation, TheCircle);
+            _mouseUpStoryBoard.Children.Add(widthAnimation);
+
+            var heightAnimation = new DoubleAnimation(toValue: this.Height / 2, new Duration(TimeSpan.FromSeconds(interval)));
+            Storyboard.SetTargetProperty(heightAnimation, new PropertyPath("Height"));
+            Storyboard.SetTarget(heightAnimation, TheCircle);
+            _mouseUpStoryBoard.Children.Add(heightAnimation);
+
+            var opacityAnimation = new DoubleAnimation(toValue: 0, new Duration(TimeSpan.FromSeconds(interval)));
+            Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath("Opacity"));
+            Storyboard.SetTarget(opacityAnimation, TheCircle);
+            _mouseUpStoryBoard.Children.Add(opacityAnimation);
+
+            _mouseUpStoryBoard.Completed += MouseDownStoryBoardOnCompleted;
+            if (_mouseUpStoryBoard.CanFreeze)
+            {
+                _mouseUpStoryBoard.Freeze();
+            }
+        }
+
+        /// <summary>
+        /// 鼠标按下特效
+        /// </summary>
+        private void CreateMouseDownStoryBoard()
+        {
             // 初始化动画
             double interval = 0.4;
-            _storyboard = new Storyboard();
-            _storyboard.FillBehavior = FillBehavior.Stop;
+            _mouseDownStoryBoard = new Storyboard();
+            _mouseDownStoryBoard.FillBehavior = FillBehavior.Stop;
 
 
             var widthAnimation = new DoubleAnimation(toValue: this.Width, new Duration(TimeSpan.FromSeconds(interval)));
             Storyboard.SetTargetProperty(widthAnimation, new PropertyPath("Width"));
             Storyboard.SetTarget(widthAnimation, TheCircle);
-            _storyboard.Children.Add(widthAnimation);
+            _mouseDownStoryBoard.Children.Add(widthAnimation);
 
             var heightAnimation = new DoubleAnimation(toValue: this.Height, new Duration(TimeSpan.FromSeconds(interval)));
             Storyboard.SetTargetProperty(heightAnimation, new PropertyPath("Height"));
             Storyboard.SetTarget(heightAnimation, TheCircle);
-            _storyboard.Children.Add(heightAnimation);
+            _mouseDownStoryBoard.Children.Add(heightAnimation);
 
             var opacityAnimation = new DoubleAnimation(toValue: 0, new Duration(TimeSpan.FromSeconds(interval)));
             Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath("Opacity"));
             Storyboard.SetTarget(opacityAnimation, TheCircle);
-            _storyboard.Children.Add(opacityAnimation);
+            _mouseDownStoryBoard.Children.Add(opacityAnimation);
 
-            _storyboard.Completed += StoryboardOnCompleted;
-            if (_storyboard.CanFreeze)
+            _mouseDownStoryBoard.Completed += MouseDownStoryBoardOnCompleted;
+            if (_mouseDownStoryBoard.CanFreeze)
             {
-                _storyboard.Freeze();
+                _mouseDownStoryBoard.Freeze();
             }
-
-            //Play();
         }
 
         private void OnDpiChanged(object sender, DpiChangedEventArgs e)
@@ -76,7 +118,7 @@ namespace ClickShow
             {
                 _currentDpi = VisualTreeHelper.GetDpi(this);
 
-                
+
             }
 
             return _currentDpi.DpiScaleX;
@@ -87,7 +129,7 @@ namespace ClickShow
 
         private DpiScale _currentDpi;
 
-        
+
 
         public bool DpiHasChanged { get; private set; } = false;
 
@@ -96,14 +138,26 @@ namespace ClickShow
             IsIdle = false;
         }
 
-        public void Play(Brush circleBrush)
+        public void Play(Brush circleBrush, bool isDown)
         {
-            Opacity = 1;
+            Opacity = isDown ? 0.95 : 0.7;
+
+            // 抬起特效
+
+
             TheCircle.Stroke = circleBrush;
 
             IsIdle = false;
 
-            _storyboard.Begin();
+            if (isDown)
+            {
+                _mouseDownStoryBoard.Begin();
+            }
+            else
+            {
+                _mouseUpStoryBoard.Begin();
+            }
+
 
             this.Show();
         }
@@ -115,7 +169,7 @@ namespace ClickShow
             WindowHelper.SetWindowExTransparent(new WindowInteropHelper(this).Handle);
         }
 
-        private void StoryboardOnCompleted(object sender, EventArgs e)
+        private void MouseDownStoryBoardOnCompleted(object sender, EventArgs e)
         {
 
             TheCircle.Width = 0;
