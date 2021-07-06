@@ -151,6 +151,8 @@ namespace ClickShow
 
             if (isDown)
             {
+                TheCircle.Width = this.Width * 0.2;
+                TheCircle.Height = this.Height * 0.2;
                 _mouseDownStoryBoard.Begin();
             }
             else
