@@ -194,6 +194,11 @@ namespace ClickShow
         /// </summary>
         private void MouseHookOnMouseUp(object sender, MouseEventArgs e)
         {
+            if (!EnableClickCircle)
+            {
+                return;
+            }
+
             var point = e.Location;
             var downState = _buttonStates[e.Button];
 
