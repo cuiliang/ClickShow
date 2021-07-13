@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -43,6 +44,7 @@ namespace ClickShow
         private const long UP_SHOW_DISTANCE = 200;  //移动超过多少像素后显示抬起特效
         private const long UP_TICKS_DELTA = 500;   //长按多久后抬起显示抬起特效
 
+
         private MouseHook.MouseHook _mouseHook;
 
         // 窗口缓存,解决连续点击的显示问题
@@ -51,6 +53,11 @@ namespace ClickShow
         private HoverDot _hoverDot = new HoverDot();
 
         private System.Windows.Forms.NotifyIcon _notifyIcon = null;
+
+        /// <summary>
+        /// 强制关闭窗口
+        /// </summary>
+        private bool _forceClose = false;
 
         #region 是否启用点击圈
 
@@ -156,16 +163,25 @@ namespace ClickShow
             InitializeComponent();
 
 
-            Closed += OnClosed;
-
             Loaded += OnLoaded;
-
+            Closing += OnClosing;
+            Closed += OnClosed;
             StateChanged += OnStateChanged;
 
 
-            
-
             CreateNotifyIcon();
+        }
+
+        /// <summary>
+        /// 如果是点了x关闭窗口，则隐藏窗口而不是退出程序。
+        /// </summary>
+        private void OnClosing(object sender, CancelEventArgs e)
+        {
+            if (!_forceClose)
+            {
+                e.Cancel = true;
+                this.Hide();
+            }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -231,7 +247,11 @@ namespace ClickShow
             _notifyIcon.Visible = true;
 
             var contextMenu = new System.Windows.Forms.ContextMenu();
-            var menuItem = new System.Windows.Forms.MenuItem("退出(Exit)", (sender, args) => { this.Close(); });
+            var menuItem = new System.Windows.Forms.MenuItem("退出(Exit)", (sender, args) =>
+            {
+                _forceClose = true;
+                this.Close();
+            });
             contextMenu.MenuItems.Add(menuItem);
 
             _notifyIcon.ContextMenu = contextMenu;
@@ -351,9 +371,10 @@ namespace ClickShow
             _hoverDot.Close();
         }
 
-
+        
         private void BtnClose_OnClick(object sender, RoutedEventArgs e)
         {
+            _forceClose = true;
             this.Close();
         }
 
