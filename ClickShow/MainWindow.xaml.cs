@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -43,6 +44,7 @@ namespace ClickShow
         private const long UP_SHOW_DISTANCE = 200;  //移动超过多少像素后显示抬起特效
         private const long UP_TICKS_DELTA = 500;   //长按多久后抬起显示抬起特效
 
+
         private MouseHook.MouseHook _mouseHook;
 
         // 窗口缓存,解决连续点击的显示问题
@@ -52,6 +54,12 @@ namespace ClickShow
 
         private System.Windows.Forms.NotifyIcon _notifyIcon = null;
 
+        /// <summary>
+        /// 强制关闭窗口
+        /// </summary>
+        private bool _forceClose = false;
+
+        #region 是否启用点击圈
         #region 修改点击圈大小
 
         public static readonly DependencyProperty IndicatorSizeProperty = DependencyProperty.Register(
@@ -171,16 +179,25 @@ namespace ClickShow
             InitializeComponent();
 
 
-            Closed += OnClosed;
-
             Loaded += OnLoaded;
-
+            Closing += OnClosing;
+            Closed += OnClosed;
             StateChanged += OnStateChanged;
 
 
-            
-
             CreateNotifyIcon();
+        }
+
+        /// <summary>
+        /// 如果是点了x关闭窗口，则隐藏窗口而不是退出程序。
+        /// </summary>
+        private void OnClosing(object sender, CancelEventArgs e)
+        {
+            if (!_forceClose)
+            {
+                e.Cancel = true;
+                this.Hide();
+            }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -213,7 +230,6 @@ namespace ClickShow
             {
                 return;
             }
-            var button = e.Button;
 
             var point = e.Location;
             // 记录按下状态（时间与位置）
@@ -250,7 +266,11 @@ namespace ClickShow
             _notifyIcon.Visible = true;
 
             var contextMenu = new System.Windows.Forms.ContextMenu();
-            var menuItem = new System.Windows.Forms.MenuItem("退出(Exit)", (sender, args) => { this.Close(); });
+            var menuItem = new System.Windows.Forms.MenuItem("退出(Exit)", (sender, args) =>
+            {
+                _forceClose = true;
+                this.Close();
+            });
             contextMenu.MenuItems.Add(menuItem);
 
             _notifyIcon.ContextMenu = contextMenu;
@@ -321,14 +341,14 @@ namespace ClickShow
                     point.X - (int)(size / 2),
                     point.Y - (int)(size / 2), size, size);
 
-                //if (indicator.DpiHasChanged)
-                //{
-                //    size = (int)(IndicatorSize * indicator.GetDpiScale());
-                //    // 
-                //    MoveWindowWrapper(indicator,
-                //        point.X - (int)(size / 2),
-                //        point.Y - (int)(size / 2), size, size);
-                //}
+                if (indicator.DpiHasChanged)
+                {
+                    size = (int) (INDICATOR_SIZE * indicator.GetDpiScale());
+                    // 
+                    MoveWindowWrapper(indicator,
+                        point.X - (int) (size / 2),
+                        point.Y - (int) (size / 2), size, size);
+                }
             }
             catch
             {
@@ -357,7 +377,6 @@ namespace ClickShow
         private void OnClosed(object sender, EventArgs e)
         {
             _mouseHook.MouseMove -= MouseHookOnMouseMove;
-            _mouseHook.MouseUp -= MouseHookOnMouseUp;
             _mouseHook.MouseDown -= MouseHookOnMouseDown;
             _mouseHook.Stop();
 
@@ -371,9 +390,10 @@ namespace ClickShow
             _hoverDot.Close();
         }
 
-
+        
         private void BtnClose_OnClick(object sender, RoutedEventArgs e)
         {
+            _forceClose = true;
             this.Close();
         }
 
@@ -429,7 +449,6 @@ namespace ClickShow
                 {
                     // Add the value in the registry so that the application runs at startup
                     rkApp.SetValue(AppName, Process.GetCurrentProcess().MainModule.FileName);
-                    MessageBox.Show(Process.GetCurrentProcess().MainModule.FileName);
                 }
                 else
                 {
@@ -470,12 +489,8 @@ namespace ClickShow
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
-
         #endregion
 
-        private void IndicatorColorChanged(object sender, RoutedPropertyChangedEventArgs<System.Windows.Media.Color?> e)
-        {
-
-        }
+       
     }
 }
