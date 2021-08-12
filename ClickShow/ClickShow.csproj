@@ -30,6 +30,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="NotifyIcon\**" />
+    <EmbeddedResource Remove="NotifyIcon\**" />
+    <None Remove="NotifyIcon\**" />
+    <Page Remove="NotifyIcon\**" />
+  </ItemGroup>
+  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4.7.2 %28x86 and x64%29</ProductName>
@@ -37,7 +43,7 @@
     </BootstrapperPackage>   
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="NotifyIcon\" />
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.1.0" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="clickshow.ico" />

@@ -38,7 +38,7 @@ namespace ClickShow
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const double INDICATOR_SIZE = 150;  //波纹窗口大小
+        //private const double IndicatorSize = 150;  //波纹窗口大小
         private const double DOT_SIZE = 60;         //鼠标位置悬浮标大小
         private const long UP_SHOW_DISTANCE = 200;  //移动超过多少像素后显示抬起特效
         private const long UP_TICKS_DELTA = 500;   //长按多久后抬起显示抬起特效
@@ -52,8 +52,23 @@ namespace ClickShow
 
         private System.Windows.Forms.NotifyIcon _notifyIcon = null;
 
-        #region 是否启用点击圈
+        #region 修改点击圈大小
 
+        public static readonly DependencyProperty IndicatorSizeProperty = DependencyProperty.Register(
+            "IndicatorSize", typeof(double), typeof(MainWindow), new PropertyMetadata(double.Parse("500")));
+
+        /// <summary>
+        /// 点击圈大小
+        /// </summary>
+        public double IndicatorSize
+        {
+            get { return (double)GetValue(IndicatorSizeProperty); }
+            set { SetValue(IndicatorSizeProperty, value); }
+        }
+
+        #endregion
+
+        #region 是否启用点击圈
 
         public static readonly DependencyProperty EnableClickCircleProperty = DependencyProperty.Register(
             "EnableClickCircle", typeof(bool), typeof(MainWindow), new PropertyMetadata(true));
@@ -194,9 +209,18 @@ namespace ClickShow
         /// </summary>
         private void MouseHookOnMouseUp(object sender, MouseEventArgs e)
         {
-            var point = e.Location;
-            var downState = _buttonStates[e.Button];
+            if (!EnableClickCircle)
+            {
+                return;
+            }
+            var button = e.Button;
 
+            var point = e.Location;
+            // 记录按下状态（时间与位置）
+            //_buttonStates[button].DownPosition = point;
+            //_buttonStates[button].DownTimeTicks = Environment.TickCount;
+
+            var downState = _buttonStates[button];
             // 距离超过设定，或者抬起时间超过设定，显示抬起特效。
             if (((point.X - downState.DownPosition.X) * (point.X - downState.DownPosition.X)
                  + (point.Y - downState.DownPosition.Y) * (point.Y - downState.DownPosition.Y)) > UP_SHOW_DISTANCE * UP_SHOW_DISTANCE
@@ -291,20 +315,20 @@ namespace ClickShow
 
                 indicator.Play(brush, isDown);
 
-                var size = (int) (INDICATOR_SIZE * indicator.GetDpiScale());
+                var size = (int)(IndicatorSize * indicator.GetDpiScale());
 
                 MoveWindowWrapper(indicator,
-                    point.X - (int) (size / 2),
-                    point.Y - (int) (size / 2), size, size);
+                    point.X - (int)(size / 2),
+                    point.Y - (int)(size / 2), size, size);
 
-                if (indicator.DpiHasChanged)
-                {
-                    size = (int) (INDICATOR_SIZE * indicator.GetDpiScale());
-                    // 
-                    MoveWindowWrapper(indicator,
-                        point.X - (int) (size / 2),
-                        point.Y - (int) (size / 2), size, size);
-                }
+                //if (indicator.DpiHasChanged)
+                //{
+                //    size = (int)(IndicatorSize * indicator.GetDpiScale());
+                //    // 
+                //    MoveWindowWrapper(indicator,
+                //        point.X - (int)(size / 2),
+                //        point.Y - (int)(size / 2), size, size);
+                //}
             }
             catch
             {
@@ -333,6 +357,7 @@ namespace ClickShow
         private void OnClosed(object sender, EventArgs e)
         {
             _mouseHook.MouseMove -= MouseHookOnMouseMove;
+            _mouseHook.MouseUp -= MouseHookOnMouseUp;
             _mouseHook.MouseDown -= MouseHookOnMouseDown;
             _mouseHook.Stop();
 
@@ -404,6 +429,7 @@ namespace ClickShow
                 {
                     // Add the value in the registry so that the application runs at startup
                     rkApp.SetValue(AppName, Process.GetCurrentProcess().MainModule.FileName);
+                    MessageBox.Show(Process.GetCurrentProcess().MainModule.FileName);
                 }
                 else
                 {
@@ -444,8 +470,12 @@ namespace ClickShow
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
+
         #endregion
 
-       
+        private void IndicatorColorChanged(object sender, RoutedPropertyChangedEventArgs<System.Windows.Media.Color?> e)
+        {
+
+        }
     }
 }

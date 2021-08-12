@@ -30,7 +30,7 @@ namespace ClickShow
             ShowActivated = false;
             InitializeComponent();
 
-            SourceInitialized += OnSourceInitialized;
+            //SourceInitialized += OnSourceInitialized;
             DpiChanged += OnDpiChanged;
 
             RenderOptions.SetBitmapScalingMode(TheCircle, BitmapScalingMode.LowQuality);
@@ -46,7 +46,7 @@ namespace ClickShow
         private void CreateMouseUpStoryBoard()
         {
             // 初始化动画
-            double interval = 0.3;
+            double interval = 5;
             _mouseUpStoryBoard = new Storyboard();
             _mouseUpStoryBoard.FillBehavior = FillBehavior.Stop;
 
@@ -79,7 +79,7 @@ namespace ClickShow
         private void CreateMouseDownStoryBoard()
         {
             // 初始化动画
-            double interval = 0.4;
+            double interval = 3;
             _mouseDownStoryBoard = new Storyboard();
             _mouseDownStoryBoard.FillBehavior = FillBehavior.Stop;
 
@@ -151,8 +151,8 @@ namespace ClickShow
 
             if (isDown)
             {
-                TheCircle.Width = this.Width * 0.2;
-                TheCircle.Height = this.Height * 0.2;
+                TheCircle.Width = this.Width*0.2;
+                TheCircle.Height = this.Height*0.2;
                 _mouseDownStoryBoard.Begin();
             }
             else
@@ -176,7 +176,7 @@ namespace ClickShow
 
             TheCircle.Width = 0;
             TheCircle.Height = 0;
-            Opacity = 0;
+            this.Opacity = 0;
 
             IsIdle = true;
             DpiHasChanged = false;
