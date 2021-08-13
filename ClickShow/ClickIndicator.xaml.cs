@@ -24,11 +24,13 @@ namespace ClickShow
     {
         private Storyboard _mouseDownStoryBoard;
         private Storyboard _mouseUpStoryBoard;
-
-        public ClickIndicator()
+        public int LastLiveTime { get; set; } = Environment.TickCount;
+        public ClickIndicator(double size)
         {
             ShowActivated = false;
             InitializeComponent();
+            this.Width = size;
+            this.Height = size;
 
             //SourceInitialized += OnSourceInitialized;
             DpiChanged += OnDpiChanged;
@@ -46,7 +48,7 @@ namespace ClickShow
         private void CreateMouseUpStoryBoard()
         {
             // 初始化动画
-            double interval = 5;
+            double interval = 0.3;
             _mouseUpStoryBoard = new Storyboard();
             _mouseUpStoryBoard.FillBehavior = FillBehavior.Stop;
 
@@ -79,7 +81,7 @@ namespace ClickShow
         private void CreateMouseDownStoryBoard()
         {
             // 初始化动画
-            double interval = 3;
+            double interval = 0.4;
             _mouseDownStoryBoard = new Storyboard();
             _mouseDownStoryBoard.FillBehavior = FillBehavior.Stop;
 
@@ -140,6 +142,7 @@ namespace ClickShow
 
         public void Play(Brush circleBrush, bool isDown)
         {
+            this.LastLiveTime = Environment.TickCount;
             Opacity = isDown ? 0.95 : 0.7;
 
             // 抬起特效
@@ -151,8 +154,8 @@ namespace ClickShow
 
             if (isDown)
             {
-                TheCircle.Width = this.Width*0.2;
-                TheCircle.Height = this.Height*0.2;
+                TheCircle.Width = this.Width * 0.2;
+                TheCircle.Height = this.Height * 0.2;
                 _mouseDownStoryBoard.Begin();
             }
             else

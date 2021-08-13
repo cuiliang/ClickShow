@@ -8,6 +8,7 @@
     Title="HoverDot"
     Width="60"
     Height="60"
+    x:Name="DotWindow"
     AllowsTransparency="True"
     Background="Transparent"
     ShowActivated="False"
@@ -18,10 +19,12 @@
     mc:Ignorable="d">
     <Grid>
         <Ellipse
-            Width="60"
-            Height="60"
+            x:Name="Dot"
+            Width="{Binding Width, ElementName=DotWindow}"
+            Height="{Binding Height, ElementName=DotWindow}"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Fill="#60FFFF5a" />
+            Opacity="0.4"
+            Fill="#FFFF5a" />
     </Grid>
 </Window>
