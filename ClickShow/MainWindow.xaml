@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:ClickShow"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     Name="TheWindow"
     Title="ClickShow"
     Width="800"
@@ -21,11 +22,13 @@
             VerticalAlignment="Center"
             Orientation="Vertical">
             <CheckBox
-                Margin="10"
+                Margin="10,10,0,5"
                 VerticalContentAlignment="Center"
                 Content="显示点击提示 / Show Click Event"
                 IsChecked="{Binding ElementName=TheWindow, Path=EnableClickCircle}"
                 ToolTip="点击时显示波纹特效" />
+
+
             <CheckBox
                 Margin="10"
                 VerticalContentAlignment="Center"
@@ -40,6 +43,73 @@
                 Click="ChkStartWithWindows_OnClick"
                 Content="随Windows启动 / Startup With Windows"
                 ToolTip="是否开机自动启动" />
+            <Expander
+                x:Name="IndicatorSetting"
+                Margin="10,0,0,0"
+                Header="设置">
+                <StackPanel>
+
+                    <TextBlock
+                        Margin="5,0,0,0"
+                        FontWeight="Bold"
+                        Text="波纹大小:" />
+                    <local:MySlider
+                        x:Name="IndicatorSizeSlider"
+                        Margin="5"
+                        AutoToolTipPlacement="BottomRight"
+                        AutoToolTipPrecision="0"
+                        Value="{Binding Path=IndicatorSize, ElementName=TheWindow,Mode=OneTime}"
+                        FinalValue="{Binding Path=IndicatorSize, ElementName=TheWindow}"
+                        IsSnapToTickEnabled="True"
+                        Maximum="500"
+                        Minimum="50"
+                        TickFrequency="5"/>
+
+                    <TextBlock
+                        Margin="5,5,0,0"
+                        FontWeight="Bold"
+                        Text="悬浮圈大小:" />
+
+                    <local:MySlider
+                        x:Name="HoverDotSizeSlider"
+                        Margin="5"
+                        AutoToolTipPlacement="BottomRight"
+                        AutoToolTipPrecision="0"
+                        Value="{Binding Path=DotSize, ElementName=TheWindow,Mode=OneTime}"
+                        FinalValue="{Binding Path=DotSize, ElementName=TheWindow}"
+                        IsSnapToTickEnabled="True"
+                        Maximum="150"
+                        Minimum="10"
+                        TickFrequency="5" />
+                    <TextBlock
+                        Margin="5,0,0,0"
+                        FontWeight="Bold"
+                        Text="波纹(悬浮圈)颜色:" />
+                    <xctk:ColorPicker Name="ColorPicker" Margin="5,5,10,10" />
+                    <StackPanel Orientation="Horizontal" Margin="0 0 0 10">
+                        <StackPanel.Resources>
+                            <Style TargetType="Button">
+                                <Setter Property="Width" Value="35" />
+                                <Setter Property="Margin" Value="2" />
+                                <Setter Property="Background" Value="AliceBlue" />
+                                <EventSetter Event="Click" Handler="ChooseClolor" />
+                                <Setter Property="ToolTip" Value="先选择颜色再点击对应的按钮改变某个按键波纹颜色" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <Button x:Name="LeftBtn" Content="左" />
+                        <Button x:Name="Middle" Content="中" />
+                        <Button x:Name="Right" Content="右" />
+                        <Button x:Name="X1" Content="X1" />
+                        <Button x:Name="X2" Content="X2" />
+                        <Button
+                            x:Name="Dot"
+                            Width="40"
+                            Content="悬浮圈" />
+                    </StackPanel>
+                    
+
+                </StackPanel>
+            </Expander>
 
             <TextBlock Margin="10" HorizontalAlignment="Center">
                 <Hyperlink NavigateUri="https://github.com/cuiliang/clickshow" RequestNavigate="Hyperlink_OnRequestNavigate">反馈与更新 / Homepage</Hyperlink>

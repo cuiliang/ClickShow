@@ -2,24 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using Brush = System.Windows.Media.Brush;
@@ -29,6 +20,8 @@ using MessageBox = System.Windows.MessageBox;
 using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
 using MouseButtonState = ClickShow.Entities.MouseButtonState;
 using Point = System.Drawing.Point;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json;
 
 namespace ClickShow
 {
@@ -39,8 +32,8 @@ namespace ClickShow
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const double INDICATOR_SIZE = 150;  //波纹窗口大小
-        private const double DOT_SIZE = 60;         //鼠标位置悬浮标大小
+        //private const double IndicatorSize = 150;  //波纹窗口大小
+        //private const double DotSize = 60;         //鼠标位置悬浮标大小
         private const long UP_SHOW_DISTANCE = 200;  //移动超过多少像素后显示抬起特效
         private const long UP_TICKS_DELTA = 500;   //长按多久后抬起显示抬起特效
 
@@ -49,18 +42,50 @@ namespace ClickShow
 
         // 窗口缓存,解决连续点击的显示问题
         private IList<ClickIndicator> _clickIndicators = new List<ClickIndicator>();
+        private ClickIndicator _currentIndicator;
 
         private HoverDot _hoverDot = new HoverDot();
 
-        private System.Windows.Forms.NotifyIcon _notifyIcon = null;
+        private NotifyIcon _notifyIcon = null;
 
         /// <summary>
         /// 强制关闭窗口
         /// </summary>
         private bool _forceClose = false;
 
-        #region 是否启用点击圈
+        #region 点击圈大小
 
+        public static readonly DependencyProperty IndicatorSizeProperty = DependencyProperty.Register(
+            "IndicatorSize", typeof(double), typeof(MainWindow), new PropertyMetadata(double.Parse("150")));
+
+        /// <summary>
+        /// 点击圈大小
+        /// </summary>
+        public double IndicatorSize
+        {
+            get { return (double)GetValue(IndicatorSizeProperty); }
+            set { SetValue(IndicatorSizeProperty, value); }
+        }
+
+        #endregion
+
+        #region 悬浮圈大小
+
+        public static readonly DependencyProperty DotSizeProperty = DependencyProperty.Register(
+            "DotSize", typeof(double), typeof(MainWindow), new PropertyMetadata(double.Parse("60")));
+
+        /// <summary>
+        /// 点击圈大小
+        /// </summary>
+        public double DotSize
+        {
+            get { return (double)GetValue(DotSizeProperty); }
+            set { SetValue(DotSizeProperty, value); }
+        }
+
+        #endregion
+
+        #region 是否启用点击圈
 
         public static readonly DependencyProperty EnableClickCircleProperty = DependencyProperty.Register(
             "EnableClickCircle", typeof(bool), typeof(MainWindow), new PropertyMetadata(true));
@@ -90,6 +115,8 @@ namespace ClickShow
         {
             if (EnableHover)
             {
+                if (Math.Abs(_hoverDot.Width - DotSize) > 1)
+                    _hoverDot.Width = _hoverDot.Height = DotSize;
                 _hoverDot.Show();
             }
             else
@@ -100,7 +127,7 @@ namespace ClickShow
 
         public bool EnableHover
         {
-            get { return (bool) GetValue(EnableHoverProperty); }
+            get { return (bool)GetValue(EnableHoverProperty); }
             set { SetValue(EnableHoverProperty, value); }
         }
 
@@ -109,7 +136,7 @@ namespace ClickShow
         /// <summary>
         /// 各个鼠标按键对应的颜色画刷
         /// </summary>
-        private readonly IDictionary<MouseButtons, Brush> _buttonBrushes = new Dictionary<MouseButtons, Brush>()
+        private IDictionary<MouseButtons, Brush> _buttonBrushes = new Dictionary<MouseButtons, Brush>()
         {
             {MouseButtons.None, Brushes.Black},
             {MouseButtons.Left, Brushes.DodgerBlue},
@@ -138,24 +165,42 @@ namespace ClickShow
         /// <returns>波纹窗口对象</returns>
         private ClickIndicator GetClickIndicatorWindow()
         {
-            var indicator = _clickIndicators.FirstOrDefault(x => x.IsIdle);
 
+            var indicator = _clickIndicators.FirstOrDefault(x => x.IsIdle && Math.Abs(x.Width - IndicatorSize) < 1);
             if (indicator != null)
             {
+                _currentIndicator = indicator;
+                //MessageBox.Show(indicator.Width.ToString());
                 indicator.Prepare();
                 return indicator;
             }
             else
             {
-                indicator = new ClickIndicator()
+                //MessageBox.Show("a");
+                indicator = new ClickIndicator(IndicatorSize)
                 {
                     WindowStartupLocation = WindowStartupLocation.Manual,
                     Topmost = true,
                     ShowActivated = false
                 };
+                _currentIndicator = indicator;
                 _clickIndicators.Add(indicator);
+                KillDeadWindow();
                 return indicator;
             }
+        }
+
+        /// <summary>
+        /// 关闭长时间未使用的indicator
+        /// </summary>
+        private void KillDeadWindow()
+        {
+            var deadIndicators = _clickIndicators.Where(x => (Environment.TickCount - x.LastLiveTime) / 1000 > 5);
+            if (deadIndicators != null && deadIndicators.Count() > 0)
+                foreach (var i in deadIndicators)
+                {
+                    i.Close();
+                }
         }
 
         public MainWindow()
@@ -167,7 +212,6 @@ namespace ClickShow
             Closing += OnClosing;
             Closed += OnClosed;
             StateChanged += OnStateChanged;
-
 
             CreateNotifyIcon();
         }
@@ -203,6 +247,40 @@ namespace ClickShow
 
             //
             Title = $"ClickShow {Assembly.GetExecutingAssembly().GetName().Version.ToString()}";
+
+            ReadUserData();
+        }
+
+        private void ReadUserData()
+        {
+            string dirPath = Directory.GetCurrentDirectory();
+            if (File.Exists(System.IO.Path.Combine(dirPath, "userData.json")))
+            {
+                //string jsonString = File.ReadAllText("userData.json");
+                UserData userData;
+                JsonSerializer serializer = new JsonSerializer();
+                using (StreamReader sw = new StreamReader(System.IO.Path.Combine(dirPath, "userData.json")))
+                using (JsonReader reader = new JsonTextReader(sw))
+                {
+                    userData = serializer.Deserialize<UserData>(reader);
+                    // {"ExpiryDate":new Date(1230375600000),"Price":0}
+                }
+                //UserData userData = JsonSerializer.Deserialize<UserData>(jsonString);
+                var brushes = userData.ButtonBrushes.Select(x =>
+                {
+                    System.Windows.Media.Color c = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(x);
+                    Brush brush = new SolidColorBrush(c);
+                    return brush;
+                }).ToList();
+                _buttonBrushes[MouseButtons.None] = brushes[0];
+                _buttonBrushes[MouseButtons.Left] = brushes[1];
+                _buttonBrushes[MouseButtons.Middle] = brushes[2];
+                _buttonBrushes[MouseButtons.Right] = brushes[3];
+                _buttonBrushes[MouseButtons.XButton1] = brushes[4];
+                _buttonBrushes[MouseButtons.XButton2] = brushes[5];
+                this.DotSize = userData.HoverDotSize;
+                this.IndicatorSize = userData.IndicatorSize;
+            }
         }
 
         /// <summary>
@@ -216,8 +294,11 @@ namespace ClickShow
             }
 
             var point = e.Location;
-            var downState = _buttonStates[e.Button];
+            // 记录按下状态（时间与位置）
+            //_buttonStates[button].DownPosition = point;
+            //_buttonStates[button].DownTimeTicks = Environment.TickCount;
 
+            var downState = _buttonStates[e.Button];
             // 距离超过设定，或者抬起时间超过设定，显示抬起特效。
             if (((point.X - downState.DownPosition.X) * (point.X - downState.DownPosition.X)
                  + (point.Y - downState.DownPosition.Y) * (point.Y - downState.DownPosition.Y)) > UP_SHOW_DISTANCE * UP_SHOW_DISTANCE
@@ -270,7 +351,7 @@ namespace ClickShow
 
         private void NotifyIconOnClick(object sender, EventArgs e)
         {
-           
+
             this.Show();
             this.Activate();
             this.WindowState = WindowState.Normal;
@@ -288,7 +369,7 @@ namespace ClickShow
 
 
             var point = e.Location;
-            
+
             var button = e.Button;
 
             // 记录按下状态（时间与位置）
@@ -316,19 +397,19 @@ namespace ClickShow
 
                 indicator.Play(brush, isDown);
 
-                var size = (int) (INDICATOR_SIZE * indicator.GetDpiScale());
+                var size = (int)(IndicatorSize * indicator.GetDpiScale());
 
                 MoveWindowWrapper(indicator,
-                    point.X - (int) (size / 2),
-                    point.Y - (int) (size / 2), size, size);
+                    point.X - (int)(size / 2),
+                    point.Y - (int)(size / 2), size, size);
 
                 if (indicator.DpiHasChanged)
                 {
-                    size = (int) (INDICATOR_SIZE * indicator.GetDpiScale());
+                    size = (int)(IndicatorSize * indicator.GetDpiScale());
                     // 
                     MoveWindowWrapper(indicator,
-                        point.X - (int) (size / 2),
-                        point.Y - (int) (size / 2), size, size);
+                        point.X - (int)(size / 2),
+                        point.Y - (int)(size / 2), size, size);
                 }
             }
             catch
@@ -347,16 +428,17 @@ namespace ClickShow
             {
                 Dispatcher.InvokeAsync(() =>
                 {
-                    var size = (int) (DOT_SIZE * _hoverDot.GetDpiScale());
+                    var size = (int)(DotSize * _hoverDot.GetDpiScale());
                     MoveWindowWrapper(_hoverDot,
-                        e.Location.X - (int) (size / 2),
-                        e.Location.Y - (int) (size / 2), size, size);
+                        e.Location.X - (int)(size / 2),
+                        e.Location.Y - (int)(size / 2), size, size);
                 });
             }
         }
 
         private void OnClosed(object sender, EventArgs e)
         {
+            SaveUserData();
             _mouseHook.MouseMove -= MouseHookOnMouseMove;
             _mouseHook.MouseDown -= MouseHookOnMouseDown;
             _mouseHook.Stop();
@@ -369,9 +451,35 @@ namespace ClickShow
             }
 
             _hoverDot.Close();
+
+
         }
 
-        
+        private void SaveUserData()
+        {
+            UserData userData = new UserData();
+
+            userData.ButtonBrushes = _buttonBrushes.Select(pair => ((SolidColorBrush)pair.Value).Color.ToString()).ToList();
+            userData.HoverDotSize = this.DotSize;
+            userData.HoverDotFill = ((SolidColorBrush)_hoverDot.Dot.Fill).Color.ToString();
+            userData.IndicatorSize = IndicatorSize;
+            //var options = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.Preserve, IgnoreNullValues = true };
+            //string jsonString = JsonSerializer.Serialize<UserData>(userData);
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.NullValueHandling = NullValueHandling.Ignore;
+            string dirPath = Directory.GetCurrentDirectory();
+            using (StreamWriter sw = new StreamWriter(System.IO.Path.Combine(dirPath, "userData.json")))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, userData);
+                // {"ExpiryDate":new Date(1230375600000),"Price":0}
+            }
+
+            //string appName = System.IO.Path.GetFileNameWithoutExtension(System.AppDomain.CurrentDomain.FriendlyName);
+            //File.WriteAllText(System.IO.Path.Combine(dirPath,"userData.json"), jsonString);
+
+        }
+
         private void BtnClose_OnClick(object sender, RoutedEventArgs e)
         {
             _forceClose = true;
@@ -387,7 +495,7 @@ namespace ClickShow
             {
                 Process.Start("https://github.com/cuiliang/clickshow");
             }
-            catch 
+            catch
             {
                 MessageBox.Show("无法打开网址：https://github.com/cuiliang/clickshow");
             }
@@ -441,7 +549,7 @@ namespace ClickShow
             {
                 MessageBox.Show("无法保存开机自动启动状态。" + ex.Message);
             }
-            
+
         }
 
         private void ChkStartWithWindows_OnClick(object sender, RoutedEventArgs e)
@@ -470,8 +578,43 @@ namespace ClickShow
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
+
         #endregion
 
-       
+        private void ChooseClolor(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Brush brush = new SolidColorBrush((System.Windows.Media.Color)ColorPicker.SelectedColor);
+                MouseButtons button = MouseButtons.Left;
+                switch ((sender as System.Windows.Controls.Button).Name)
+                {
+                    case "LeftBtn":
+                        button = MouseButtons.Left;
+                        break;
+                    case "Middle":
+                        button = MouseButtons.Middle;
+                        break;
+                    case "Right":
+                        button = MouseButtons.Right;
+                        break;
+                    case "X1":
+                        button = MouseButtons.XButton1;
+                        break;
+                    case "X2":
+                        button = MouseButtons.XButton2;
+                        break;
+                    case "Dot":
+                        _hoverDot.Dot.Fill = brush;
+                        return;
+                    default:
+                        break;
+                }
+
+                _buttonBrushes[button] = brush;
+            }
+            catch { }
+
+        }
     }
 }

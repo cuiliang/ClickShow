@@ -24,13 +24,15 @@ namespace ClickShow
     {
         private Storyboard _mouseDownStoryBoard;
         private Storyboard _mouseUpStoryBoard;
-
-        public ClickIndicator()
+        public int LastLiveTime { get; set; } = Environment.TickCount;
+        public ClickIndicator(double size)
         {
             ShowActivated = false;
             InitializeComponent();
+            this.Width = size;
+            this.Height = size;
 
-            SourceInitialized += OnSourceInitialized;
+            //SourceInitialized += OnSourceInitialized;
             DpiChanged += OnDpiChanged;
 
             RenderOptions.SetBitmapScalingMode(TheCircle, BitmapScalingMode.LowQuality);
@@ -140,6 +142,7 @@ namespace ClickShow
 
         public void Play(Brush circleBrush, bool isDown)
         {
+            this.LastLiveTime = Environment.TickCount;
             Opacity = isDown ? 0.95 : 0.7;
 
             // 抬起特效
@@ -176,7 +179,7 @@ namespace ClickShow
 
             TheCircle.Width = 0;
             TheCircle.Height = 0;
-            Opacity = 0;
+            this.Opacity = 0;
 
             IsIdle = true;
             DpiHasChanged = false;

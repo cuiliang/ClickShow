@@ -29,6 +29,15 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="NotifyIcon\**" />
+    <EmbeddedResource Remove="NotifyIcon\**" />
+    <None Remove="NotifyIcon\**" />
+    <Page Remove="NotifyIcon\**" />
+  </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
       <Visible>False</Visible>
@@ -37,7 +46,12 @@
     </BootstrapperPackage>   
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="NotifyIcon\" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>C:\Program Files\Quicker\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Toolkit">
+      <HintPath>bin\Debug\net472\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="clickshow.ico" />
