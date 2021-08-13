@@ -262,11 +262,12 @@ namespace ClickShow
                 using (StreamReader sw = new StreamReader(System.IO.Path.Combine(dirPath, "userData.json")))
                 using (JsonReader reader = new JsonTextReader(sw))
                 {
-                     userData = serializer.Deserialize<UserData>(reader);
+                    userData = serializer.Deserialize<UserData>(reader);
                     // {"ExpiryDate":new Date(1230375600000),"Price":0}
                 }
                 //UserData userData = JsonSerializer.Deserialize<UserData>(jsonString);
-                var brushes = userData.ButtonBrushes.Select(x => {
+                var brushes = userData.ButtonBrushes.Select(x =>
+                {
                     System.Windows.Media.Color c = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(x);
                     Brush brush = new SolidColorBrush(c);
                     return brush;
@@ -473,7 +474,7 @@ namespace ClickShow
                 serializer.Serialize(writer, userData);
                 // {"ExpiryDate":new Date(1230375600000),"Price":0}
             }
-            
+
             //string appName = System.IO.Path.GetFileNameWithoutExtension(System.AppDomain.CurrentDomain.FriendlyName);
             //File.WriteAllText(System.IO.Path.Combine(dirPath,"userData.json"), jsonString);
 
