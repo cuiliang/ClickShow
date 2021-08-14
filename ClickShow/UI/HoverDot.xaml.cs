@@ -49,5 +49,14 @@ namespace ClickShow
         {
             WindowHelper.SetWindowExTransparent(new WindowInteropHelper(this).Handle);
         }
+
+        /// <summary>
+        /// 设置填充画刷
+        /// </summary>
+        /// <param name="brush"></param>
+        public void SetDotBrush(Brush brush)
+        {
+            Dot.Fill = brush;
+        }
     }
 }

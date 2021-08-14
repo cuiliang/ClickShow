@@ -46,12 +46,7 @@
     </BootstrapperPackage>   
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>C:\Program Files\Quicker\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Toolkit">
-      <HintPath>bin\Debug\net472\Xceed.Wpf.Toolkit.dll</HintPath>
-    </Reference>
+    <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="4.6.97" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="clickshow.ico" />
