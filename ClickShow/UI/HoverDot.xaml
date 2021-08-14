@@ -24,7 +24,6 @@
             Height="{Binding Height, ElementName=DotWindow}"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Opacity="0.4"
             Fill="#FFFF5a" />
     </Grid>
 </Window>

@@ -25,10 +25,12 @@ namespace ClickShow
         private Storyboard _mouseDownStoryBoard;
         private Storyboard _mouseUpStoryBoard;
         public int LastLiveTime { get; set; } = Environment.TickCount;
+
         public ClickIndicator(double size)
         {
             ShowActivated = false;
             InitializeComponent();
+
             this.Width = size;
             this.Height = size;
 

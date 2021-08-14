@@ -46,12 +46,7 @@
     </BootstrapperPackage>   
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>C:\Program Files\Quicker\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Toolkit">
-      <HintPath>bin\Debug\net472\Xceed.Wpf.Toolkit.dll</HintPath>
-    </Reference>
+    <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="4.6.97" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="clickshow.ico" />
@@ -68,6 +63,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="3rd\" />
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="if  $(ConfigurationName) == ReleaseElevated (&#xD;&#xA;      copy /Y &quot;$(ProjectDir)app.manifest.elevate&quot; &quot;$(ProjectDir)app.manifest&quot;&#xD;&#xA;) ELSE (&#xD;&#xA;      copy /Y &quot;$(ProjectDir)app.manifest.normal&quot; &quot;$(ProjectDir)app.manifest&quot;&#xD;&#xA;)" />

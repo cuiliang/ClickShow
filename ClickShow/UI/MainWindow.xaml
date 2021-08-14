@@ -1,0 +1,91 @@
+﻿<Window
+    x:Class="ClickShow.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ClickShow"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+    Name="TheWindow"
+    Title="ClickShow"
+    Width="450"
+    Height="450"
+    MinWidth="250"
+    MinHeight="100"
+    ResizeMode="CanMinimize"
+    SizeToContent="Height"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Grid Margin="20,30,20,40">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <StackPanel
+            Grid.Column="0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Orientation="Vertical">
+
+            <CheckBox
+                Name="ChkStartWithWindows"
+                Margin="5"
+                VerticalContentAlignment="Center"
+                Click="ChkStartWithWindows_OnClick"
+                Content="开机自动启动(_S)"
+                ToolTip="是否开机自动启动" />
+
+            <StackPanel Name="PnlSettings" DataContext="{Binding ElementName=TheWindow, Path=AppSetting}">
+                <CheckBox
+                    Name="ChkEnableClickCircle"
+                    Margin="5"
+                    VerticalContentAlignment="Center"
+                    Content="显示点击特效(_C)"
+                    IsChecked="{Binding Path=EnableClickCircle}"
+                    ToolTip="点击时显示波纹特效" />
+
+
+                <CheckBox
+                    Name="ChkEnableHoverDot"
+                    Margin="5"
+                    VerticalContentAlignment="Center"
+                    Content="显示位置提示浮标(_F)"
+                    IsChecked="{Binding Path=EnableHoverDot}"
+                    ToolTip="在鼠标指针周围显示原点，跟随鼠标移动" />
+
+
+            </StackPanel>
+
+
+        </StackPanel>
+        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <TextBlock Margin="10" HorizontalAlignment="Center">
+                <Hyperlink NavigateUri="https://github.com/cuiliang/clickshow" RequestNavigate="HyperlinkOpenHomepage_OnRequestNavigate">反馈与更新 / Homepage</Hyperlink>
+            </TextBlock>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Button
+                    Name="BtnSettings"
+                    Margin="5"
+                    Padding="10,7"
+                    Click="BtnSettings_OnClick"
+                    Content="更多设置(_S)..." />
+
+                <Button
+                    Name="BtnClose"
+                    Grid.Column="1"
+                    Margin="5"
+                    Padding="10,7"
+                    Click="BtnClose_OnClick"
+                    Content="退出(_X)" />
+            </Grid>
+
+
+        </StackPanel>
+    </Grid>
+
+</Window>
