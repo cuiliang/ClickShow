@@ -13,9 +13,9 @@ using System.Windows.Media;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using ClickShow.Settings;
+using ClickShow.UI;
 using ClickShow.Utility;
 using Microsoft.Win32;
-using TinyJson;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
 using Exception = System.Exception;
@@ -124,7 +124,7 @@ namespace ClickShow
                 x.Close();
             }
 
-            _hoverDot.Close();
+            _hoverDot?.Close();
 
 
         }
@@ -528,7 +528,7 @@ namespace ClickShow
         private string GetSettingFilePath()
         {
             var docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            return Path.Combine(docPath, "ClickShow.json");
+            return Path.Combine(docPath, "ClickShow.setting");
         }
 
         /// <summary>
@@ -542,7 +542,7 @@ namespace ClickShow
                 try
                 {
                     var data = File.ReadAllText(settingFilePath);
-                    AppSetting = data.FromJson<AppSetting>();
+                    AppSetting = MyJsonConverter.Deserialize<AppSetting>(data);
                 }
                 catch (Exception ex)
                 {
@@ -557,6 +557,38 @@ namespace ClickShow
             {
                 AppSetting = new AppSetting();
             }
+
+            // 监听设置变更消息
+            AppSetting.PropertyChanged += OnAppSettingChanged;
+            foreach (var item in AppSetting.MouseButtonSettings)
+            {
+                item.Value.PropertyChanged += OnAppSettingChanged;
+            }
+        }
+
+
+        /// <summary>
+        /// 延迟更新
+        /// </summary>
+        private DebounceDispatcher _settingDebounceDispatcher;
+
+        /// <summary>
+        /// 设置改变后立即应用并保存
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnAppSettingChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (_settingDebounceDispatcher == null)
+            {
+                _settingDebounceDispatcher = new DebounceDispatcher();
+            }
+
+            _settingDebounceDispatcher.Debounce(100, o =>
+            {
+                SaveSettings();
+                ApplySettings();
+            });
         }
 
         /// <summary>
@@ -580,6 +612,9 @@ namespace ClickShow
             }
             catch (Exception ex)
             {
+
+                _notifyIcon.ShowBalloonTip(2000,"ClickShow", "应用设置出错，已重置设置。错误：" + ex.Message, ToolTipIcon.Warning);
+
                 //如果遇到了问题，重置设置
                 AppSetting = new AppSetting();
 
@@ -595,50 +630,28 @@ namespace ClickShow
         /// </summary>
         private void SaveSettings()
         {
-            File.WriteAllText(GetSettingFilePath(), AppSetting.ToJson());
+            try
+            {
+                File.WriteAllText(GetSettingFilePath(), MyJsonConverter.Serialize(AppSetting));
+            }
+            catch (Exception ex)
+            {
+                _notifyIcon.ShowBalloonTip(2000, "ClickShow", "设置保存出错：" + ex.Message, ToolTipIcon.Warning);
+            }
+            
         }
 
-        #endregion
+#endregion
 
-        #region 设置修改
 
-        //private void ChooseClolor(object sender, RoutedEventArgs e)
-        //{
-        //    try
-        //    {
-        //        Brush brush = new SolidColorBrush((System.Windows.Media.Color)ColorPicker.SelectedColor);
-        //        MouseButtons button = MouseButtons.Left;
-        //        switch ((sender as System.Windows.Controls.Button).Name)
-        //        {
-        //            case "LeftBtn":
-        //                button = MouseButtons.Left;
-        //                break;
-        //            case "Middle":
-        //                button = MouseButtons.Middle;
-        //                break;
-        //            case "Right":
-        //                button = MouseButtons.Right;
-        //                break;
-        //            case "X1":
-        //                button = MouseButtons.XButton1;
-        //                break;
-        //            case "X2":
-        //                button = MouseButtons.XButton2;
-        //                break;
-        //            case "Dot":
-        //                _hoverDot.Dot.Fill = brush;
-        //                return;
-        //            default:
-        //                break;
-        //        }
 
-        //        _buttonBrushes[button] = brush;
-        //    }
-        //    catch { }
+        private void BtnSettings_OnClick(object sender, RoutedEventArgs e)
+        {
+            var dlg = new SettingsWindow(AppSetting);
+            dlg.Owner = this;
 
-        //}
-
-        #endregion
+            dlg.ShowDialog();
+        }
 
     }
 }

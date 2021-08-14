@@ -64,6 +64,9 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="3rd\" />
+  </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="if  $(ConfigurationName) == ReleaseElevated (&#xD;&#xA;      copy /Y &quot;$(ProjectDir)app.manifest.elevate&quot; &quot;$(ProjectDir)app.manifest&quot;&#xD;&#xA;) ELSE (&#xD;&#xA;      copy /Y &quot;$(ProjectDir)app.manifest.normal&quot; &quot;$(ProjectDir)app.manifest&quot;&#xD;&#xA;)" />
   </Target>

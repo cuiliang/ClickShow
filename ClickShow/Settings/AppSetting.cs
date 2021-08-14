@@ -20,7 +20,7 @@ namespace ClickShow.Settings
     {
         private bool _enableClickCircle = true;
         private bool _enableHoverDot = false;
-        private IDictionary<MouseButtons, ButtonSetting> _mouseButtonSettings = new Dictionary<MouseButtons, ButtonSetting>()
+        private Dictionary<MouseButtons, ButtonSetting> _mouseButtonSettings = new Dictionary<MouseButtons, ButtonSetting>()
         {
             {MouseButtons.Left, new ButtonSetting(Colors.DodgerBlue.ToArgb())},
             {MouseButtons.Middle, new ButtonSetting(Colors.Green.ToArgb())},
@@ -62,7 +62,7 @@ namespace ClickShow.Settings
         /// <summary>
         /// 鼠标按键设置
         /// </summary>
-        public IDictionary<MouseButtons, ButtonSetting> MouseButtonSettings
+        public Dictionary<MouseButtons, ButtonSetting> MouseButtonSettings
         {
             get => _mouseButtonSettings;
             set => _mouseButtonSettings = value;
