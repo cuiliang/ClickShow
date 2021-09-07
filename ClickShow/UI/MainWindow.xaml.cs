@@ -4,8 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -96,6 +98,67 @@ namespace ClickShow
             _mouseHook.MouseMove += MouseHookOnMouseMove;
             _mouseHook.MouseUp += MouseHookOnMouseUp;
             _mouseHook.Start();
+
+            // 检查版本更新
+            Task.Run(async () =>
+            {
+                await Task.Delay(1000 * 60 * 1);
+                CheckUpdate();
+            });
+            
+        }
+
+        /// <summary>
+        /// 在主窗口上提示有新版本
+        /// </summary>
+        public bool ShowNewVersionTip { get; set; }
+        public Version NewVersion { get; set; }
+
+        /// <summary>
+        /// 检查版本更新
+        /// </summary>
+        private void CheckUpdate()
+        {
+            string url = "https://raw.githubusercontent.com/cuiliang/ClickShow/main/version.txt";
+
+            try
+            {
+                var client = new WebClient();
+                var versionStr = client.DownloadString(url);
+                NewVersion = new Version(versionStr);
+
+                // 版本落后了
+                if (NewVersion > Assembly.GetExecutingAssembly().GetName().Version)
+                {
+                    // 如果之前已经提示了此版本，则不再提示，不然每次开机都会有一个提示了。
+                    if (String.Equals(AppSetting.LastNotifiedVersion, versionStr))
+                    {
+                        ShowNewVersionTip = true;
+                    }
+                    else
+                    {
+                        AppSetting.LastNotifiedVersion = versionStr;
+                        SaveSettings();
+
+                        if (MessageBox.Show($"ClickShow有新版本（{versionStr}），是否立即打开网页？", "ClickShow", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                        {
+                            try
+                            {
+                                Process.Start("https://github.com/cuiliang/ClickShow/releases");
+                            }
+                            catch
+                            {
+                                MessageBox.Show("无法打开网址：https://github.com/cuiliang/ClickShow/releases");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // ignore error
+            }
+
         }
 
         /// <summary>
