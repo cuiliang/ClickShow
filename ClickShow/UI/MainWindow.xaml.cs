@@ -102,16 +102,12 @@ namespace ClickShow
             // 检查版本更新
             Task.Run(async () =>
             {
-                await Task.Delay(1000 * 60 * 1);
+                await Task.Delay(1000 * 10 );
                 CheckUpdate();
             });
             
         }
 
-        /// <summary>
-        /// 在主窗口上提示有新版本
-        /// </summary>
-        public bool ShowNewVersionTip { get; set; }
         public Version NewVersion { get; set; }
 
         /// <summary>
@@ -119,13 +115,30 @@ namespace ClickShow
         /// </summary>
         private void CheckUpdate()
         {
-            string url = "https://raw.githubusercontent.com/cuiliang/ClickShow/main/version.txt";
+            // 版本号检查网址
+            string url = "https://helperservice.getquicker.cn/clickshow/version";
+            string updateUrl = "https://github.com/cuiliang/ClickShow/releases";
 
             try
             {
                 var client = new WebClient();
+                
+                // 下载版本信息字符串。可能格式：（1）只有版本号。 （2）版本号|网址
                 var versionStr = client.DownloadString(url);
-                NewVersion = new Version(versionStr);
+
+                if (versionStr.Contains("|"))
+                {
+                    string[] parts = versionStr.Split('|');
+                    NewVersion = new Version(parts[0]);
+                    updateUrl = String.IsNullOrEmpty(parts[1]) ? updateUrl : parts[1];
+                }
+                else
+                {
+                    NewVersion = new Version(versionStr);
+                }
+
+
+              
 
                 // 版本落后了
                 if (NewVersion > Assembly.GetExecutingAssembly().GetName().Version)
@@ -133,23 +146,28 @@ namespace ClickShow
                     // 如果之前已经提示了此版本，则不再提示，不然每次开机都会有一个提示了。
                     if (String.Equals(AppSetting.LastNotifiedVersion, versionStr))
                     {
-                        ShowNewVersionTip = true;
+                        Dispatcher.InvokeAsync(() =>
+                        {
+                            LblNewVersion.Visibility = Visibility.Visible;
+
+                        });
                     }
                     else
                     {
                         AppSetting.LastNotifiedVersion = versionStr;
                         SaveSettings();
 
-                        if (MessageBox.Show($"ClickShow有新版本（{versionStr}），是否立即打开网页？", "ClickShow", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                        if (MessageBox.Show($"ClickShow有新版本（{versionStr}），是否立即打开网页？", "ClickShow", MessageBoxButton.YesNo, MessageBoxImage.Information) != MessageBoxResult.Yes)
                         {
-                            try
-                            {
-                                Process.Start("https://github.com/cuiliang/ClickShow/releases");
-                            }
-                            catch
-                            {
-                                MessageBox.Show("无法打开网址：https://github.com/cuiliang/ClickShow/releases");
-                            }
+                            return;
+                        }
+                        try
+                        {
+                            Process.Start(updateUrl);
+                        }
+                        catch
+                        {
+                            MessageBox.Show($"无法打开网址：{updateUrl}");
                         }
                     }
                 }

@@ -116,7 +116,7 @@ namespace ClickShow.Settings
         }
 
         /// <summary>
-        /// 上次提醒的版本
+        /// 上次提醒的最新版本，避免重复提醒。
         /// </summary>
         public string LastNotifiedVersion { get; set; }
     }

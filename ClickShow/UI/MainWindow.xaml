@@ -60,8 +60,11 @@
         </StackPanel>
         <StackPanel Grid.Column="1" VerticalAlignment="Center">
             <TextBlock Margin="10" HorizontalAlignment="Center">
-                <Hyperlink NavigateUri="https://github.com/cuiliang/clickshow" RequestNavigate="HyperlinkOpenHomepage_OnRequestNavigate">反馈与更新 / Homepage</Hyperlink>
+                <Hyperlink NavigateUri="https://github.com/cuiliang/clickshow" RequestNavigate="HyperlinkOpenHomepage_OnRequestNavigate">反馈与更新 / Homepage</Hyperlink>                
+                <LineBreak></LineBreak>
+                <TextBlock Name="LblNewVersion" Foreground="OrangeRed" FontWeight="Bold" Visibility="Collapsed" Text="已有新版本!"/>
             </TextBlock>
+            
 
             <Grid>
                 <Grid.ColumnDefinitions>
