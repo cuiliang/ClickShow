@@ -600,6 +600,11 @@ namespace ClickShow
                 {
                     //TODO: 实现获取UAC授权
                     //获取管理员权限
+                    //ProcessStartInfo psi = new ProcessStartInfo();
+                    //psi.FileName = "test.exe";
+                    //psi.Verb = "runas";
+                    //psi.Arguments = "";
+                    //Process.Start(psi);
                     MessageBox.Show("请使用【管理员身份】来启动");
                     ChkStartWithWindows.IsChecked = !ChkStartWithWindows.IsChecked;
                     return;
@@ -661,6 +666,11 @@ namespace ClickShow
                     td.Settings.StopIfGoingOnBatteries = false;
                     //禁止【条件】->【空闲】->【仅当计算机空闲时间超过下列值时才启动此任务(C):】
                     td.Settings.RunOnlyIfIdle = false;
+                    //td.Settings.DeleteExpiredTaskAfter = 时间？？;
+                    //禁止【设置】->【如果请求后任务还在运行，强行将其停止】
+                    td.Settings.AllowHardTerminate = false;
+                    //禁止【设置】->【如果任务运行时间超过以下时间，停止任务】
+                    td.Settings.ExecutionTimeLimit = TimeSpan.Zero;
                     //开机后1分钟开始运行任务
                     //td.Triggers.Add(new BootTrigger { Delay = new TimeSpan(0, 1, 0) });
                     //设置【使用最高权限运行】
