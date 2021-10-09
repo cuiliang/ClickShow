@@ -34,6 +34,20 @@
                 Click="ChkStartWithWindows_OnClick"
                 Content="开机自动启动(_S)"
                 ToolTip="是否开机自动启动" />
+            <CheckBox
+                x:Name="ChkStartAdminWithWindows"
+                Margin="5"
+                VerticalContentAlignment="Center"
+                Click="ChkStartAdminWithWindows_OnClick"
+                ToolTip="是否开机自动启动(使用UAC权限自动启动)" >
+                <!-- Image Name="ChkStartAdminWithWindowsImage" /-->
+                <TextBlock>
+                    <Run Text="开机自动启动(UAC) "/>
+                    <InlineUIContainer>
+                        <Image x:Name="ChkStartAdminWithWindowsImage" Height="16" Width="16"/>
+                    </InlineUIContainer>
+                </TextBlock>
+            </CheckBox>
 
             <StackPanel Name="PnlSettings" DataContext="{Binding ElementName=TheWindow, Path=AppSetting}">
                 <CheckBox
