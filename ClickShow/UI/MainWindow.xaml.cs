@@ -25,6 +25,9 @@ using MessageBox = System.Windows.MessageBox;
 using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
 using MouseButtonState = ClickShow.Entities.MouseButtonState;
 using Point = System.Drawing.Point;
+using System.Security.Principal;
+using Microsoft.Win32.TaskScheduler;
+using System.Windows.Media.Imaging;
 
 namespace ClickShow
 {
@@ -100,9 +103,9 @@ namespace ClickShow
             _mouseHook.Start();
 
             // 检查版本更新
-            Task.Run(async () =>
+            System.Threading.Tasks.Task.Run(async () =>
             {
-                await Task.Delay(1000 * 10 );
+                await System.Threading.Tasks.Task.Delay(1000 * 10 );
                 CheckUpdate();
             });
             
@@ -174,6 +177,7 @@ namespace ClickShow
             }
             catch (Exception ex)
             {
+                Trace.WriteLine(ex.Message);
                 // ignore error
             }
 
@@ -518,6 +522,10 @@ namespace ClickShow
 
         #region 自动启动
 
+        private static readonly string taskFolder = "\\ClickShow";
+        private static readonly string taskName = "RunClickShow";
+        private static readonly string taskAllPath = taskFolder + "\\" + taskName;
+
         // The path to the key where Windows looks for startup applications
         RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
         private string AppName = "ClickShow";
@@ -535,6 +543,17 @@ namespace ClickShow
                 {
                     // The value exists, the application is set to run at startup
                     ChkStartWithWindows.IsChecked = true;
+                }
+                //获取指定的【任务计划程序】是否存在
+                ChkStartAdminWithWindows.IsChecked = new TaskService().GetTask(taskAllPath) != null;
+                var icon = getUacIcon();
+                ChkStartAdminWithWindowsImage.Source = icon;
+                //如果是管理员，给个UAC标识
+                if (IsAdministrator() && Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 6)
+                {
+                    //TODO: 在主窗口标题后面添加UAC标识
+                    //好像不对劲，放在了LOGO上面
+                    //TheWindow.Icon = icon;
                 }
             }
             catch (Exception ex)
@@ -573,11 +592,153 @@ namespace ClickShow
         /// <param name="e"></param>
         private void ChkStartWithWindows_OnClick(object sender, RoutedEventArgs e)
         {
+            //取消高级启动项
+            if (ChkStartAdminWithWindows.IsChecked == true)
+            {
+                //判断是否是amdin权限
+                if (!IsAdministrator())
+                {
+                    //TODO: 实现获取UAC授权
+                    //获取管理员权限
+                    //ProcessStartInfo psi = new ProcessStartInfo();
+                    //psi.FileName = "test.exe";
+                    //psi.Verb = "runas";
+                    //psi.Arguments = "";
+                    //Process.Start(psi);
+                    MessageBox.Show("请使用【管理员身份】来启动");
+                    ChkStartWithWindows.IsChecked = !ChkStartWithWindows.IsChecked;
+                    return;
+                }
+                ChkStartAdminWithWindows.IsChecked = false;
+                TaskService ts = new TaskService();
+                //删除指定的【任务计划程序】
+                ts.GetFolder(taskFolder)?.DeleteTask(taskName);
+                //删除其上的文件夹
+                ts.RootFolder.DeleteFolder(taskFolder);
+            }
             SaveAutoStart();
         }
+
+
+        /// <summary>
+        /// 点击切换了自动启动选项(UAC)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ChkStartAdminWithWindows_OnClick(object sender, RoutedEventArgs e)
+        {
+            //判断是否是amdin权限
+            if (!IsAdministrator())
+            {
+                //TODO: 实现获取UAC授权
+                //获取管理员权限
+                MessageBox.Show("请使用【管理员身份】来启动");
+                ChkStartAdminWithWindows.IsChecked = !ChkStartAdminWithWindows.IsChecked;
+                return;
+            }
+            TaskService ts = new TaskService();
+            if (ChkStartAdminWithWindows.IsChecked == false)
+            {
+                //删除指定的【任务计划程序】
+                ts.GetFolder(taskFolder)?.DeleteTask(taskName);
+                //删除其上的文件夹
+                ts.RootFolder.DeleteFolder(taskFolder);
+
+            }
+            else
+            {
+                //取消普通的开机启动项
+                ChkStartWithWindows.IsChecked = false;
+                SaveAutoStart();
+                //获取指定的【任务计划程序】
+                Microsoft.Win32.TaskScheduler.Task wsTask = ts.GetTask(taskAllPath);
+                //不存在，创建一个
+                if (wsTask == null)
+                {
+                    TaskDefinition td = ts.NewTask();
+                    //设置【常规】->【描述】
+                    td.RegistrationInfo.Description = "自启动ClickShow";
+                    //设置【常规】->【创建者】
+                    td.RegistrationInfo.Author = "ClickShow";
+                    //禁止【条件】->【电源】->【只有在计算机使用交流电源时才启动此任务(P)】
+                    td.Settings.DisallowStartIfOnBatteries = false;
+                    //禁止【条件】->【电源】->【如果计算机改用电池电源，则停止(B)】
+                    td.Settings.StopIfGoingOnBatteries = false;
+                    //禁止【条件】->【空闲】->【仅当计算机空闲时间超过下列值时才启动此任务(C):】
+                    td.Settings.RunOnlyIfIdle = false;
+                    //td.Settings.DeleteExpiredTaskAfter = 时间？？;
+                    //禁止【设置】->【如果请求后任务还在运行，强行将其停止】
+                    td.Settings.AllowHardTerminate = false;
+                    //禁止【设置】->【如果任务运行时间超过以下时间，停止任务】
+                    td.Settings.ExecutionTimeLimit = TimeSpan.Zero;
+                    //开机后1分钟开始运行任务
+                    //td.Triggers.Add(new BootTrigger { Delay = new TimeSpan(0, 1, 0) });
+                    //设置【使用最高权限运行】
+                    td.Principal.RunLevel = TaskRunLevel.Highest;
+                    //添加【触发器】任何用户登录后启动
+                    td.Triggers.Add(new LogonTrigger());
+                    //添加【操作】（启动本程序）
+                    td.Actions.Add(new ExecAction(Process.GetCurrentProcess().MainModule.FileName));
+                    ts.RootFolder.RegisterTaskDefinition(taskAllPath, td);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取amdin权限,如果系统低于Vista（不含Vista）直接认为有权限
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsAdministrator()
+        {
+            WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            WindowsPrincipal principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator) && Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 6;
+        }
         #endregion
+        #region UAC小盾牌图标
+        /// <summary>
+        /// 获取UAC小盾牌图标
+        /// </summary>
+        /// <returns></returns>
+        public static ImageSource getUacIcon()
+        {
+            SHSTOCKICONINFO iconInfo = new SHSTOCKICONINFO();
+            iconInfo.cbSize = (UInt32)Marshal.SizeOf(iconInfo);
+            SHGetStockIconInfo(SHSTOCKICONID.SIID_SHIELD, SHGSI.SHGSI_ICON | SHGSI.SHGSI_SMALLICON, ref iconInfo);
+            System.Drawing.Icon icon = System.Drawing.Icon.FromHandle(iconInfo.hIcon);
+            //转换成正经图片
+            ImageSource imageSource = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            return imageSource;
+        }
+   
+        [DllImport("shell32.dll", SetLastError = false)]
+        public static extern Int32 SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI uFlags, ref SHSTOCKICONINFO psii);
 
+        public enum SHSTOCKICONID : uint
+        {
+            SIID_SHIELD = 77
+        }
 
+        [Flags]
+        public enum SHGSI : uint
+        {
+            SHGSI_ICON = 0x000000100,
+            SHGSI_SMALLICON = 0x000000001
+        }
+
+        [StructLayoutAttribute(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct SHSTOCKICONINFO
+        {
+            public UInt32 cbSize;
+            public IntPtr hIcon;
+            public Int32 iSysIconIndex;
+            public Int32 iIcon;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            public string szPath;
+        }
+
+        #endregion
         #region Native 调用
 
         public void MoveWindowWrapper(Window window, int X, int Y, int nWidth, int nHeight)

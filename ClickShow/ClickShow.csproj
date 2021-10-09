@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="4.6.97" />
+    <PackageReference Include="TaskScheduler" Version="2.9.2" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="clickshow.ico" />
