@@ -4,8 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -96,6 +98,85 @@ namespace ClickShow
             _mouseHook.MouseMove += MouseHookOnMouseMove;
             _mouseHook.MouseUp += MouseHookOnMouseUp;
             _mouseHook.Start();
+
+            // 检查版本更新
+            Task.Run(async () =>
+            {
+                await Task.Delay(1000 * 10 );
+                CheckUpdate();
+            });
+            
+        }
+
+        public Version NewVersion { get; set; }
+
+        /// <summary>
+        /// 检查版本更新
+        /// </summary>
+        private void CheckUpdate()
+        {
+            // 版本号检查网址
+            string url = "https://helperservice.getquicker.cn/clickshow/version";
+            string updateUrl = "https://github.com/cuiliang/ClickShow/releases";
+
+            try
+            {
+                var client = new WebClient();
+                
+                // 下载版本信息字符串。可能格式：（1）只有版本号。 （2）版本号|网址
+                var versionStr = client.DownloadString(url);
+
+                if (versionStr.Contains("|"))
+                {
+                    string[] parts = versionStr.Split('|');
+                    NewVersion = new Version(parts[0]);
+                    updateUrl = String.IsNullOrEmpty(parts[1]) ? updateUrl : parts[1];
+                }
+                else
+                {
+                    NewVersion = new Version(versionStr);
+                }
+
+
+              
+
+                // 版本落后了
+                if (NewVersion > Assembly.GetExecutingAssembly().GetName().Version)
+                {
+                    // 如果之前已经提示了此版本，则不再提示，不然每次开机都会有一个提示了。
+                    if (String.Equals(AppSetting.LastNotifiedVersion, versionStr))
+                    {
+                        Dispatcher.InvokeAsync(() =>
+                        {
+                            LblNewVersion.Visibility = Visibility.Visible;
+
+                        });
+                    }
+                    else
+                    {
+                        AppSetting.LastNotifiedVersion = versionStr;
+                        SaveSettings();
+
+                        if (MessageBox.Show($"ClickShow有新版本（{versionStr}），是否立即打开网页？", "ClickShow", MessageBoxButton.YesNo, MessageBoxImage.Information) != MessageBoxResult.Yes)
+                        {
+                            return;
+                        }
+                        try
+                        {
+                            Process.Start(updateUrl);
+                        }
+                        catch
+                        {
+                            MessageBox.Show($"无法打开网址：{updateUrl}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // ignore error
+            }
+
         }
 
         /// <summary>

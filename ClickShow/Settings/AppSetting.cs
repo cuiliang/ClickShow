@@ -114,5 +114,10 @@ namespace ClickShow.Settings
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        /// <summary>
+        /// 上次提醒的最新版本，避免重复提醒。
+        /// </summary>
+        public string LastNotifiedVersion { get; set; }
     }
 }

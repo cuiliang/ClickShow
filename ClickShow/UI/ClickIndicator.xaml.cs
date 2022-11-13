@@ -34,7 +34,7 @@ namespace ClickShow
             this.Width = size;
             this.Height = size;
 
-            //SourceInitialized += OnSourceInitialized;
+            SourceInitialized += OnSourceInitialized;
             DpiChanged += OnDpiChanged;
 
             RenderOptions.SetBitmapScalingMode(TheCircle, BitmapScalingMode.LowQuality);
